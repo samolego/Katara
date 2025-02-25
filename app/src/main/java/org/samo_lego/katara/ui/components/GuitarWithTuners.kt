@@ -104,11 +104,12 @@ private fun TunersLayout(
                 val x = (position.startX - tunerRadius+ spec.knobsXOffsets[string]!!) * scale + offsetX  // Subtract radius to center horizontally
                 val y = (position.startY - tunerRadius) * scale + offsetY  // Subtract radius to center vertically
 
-                LeftTunerWithNote(
+                GuitarTunerKnob(
                     tuner = TunerState(
                         note = string.fullNoteName(),
                         rotation = getKnobRotation(string, activeString, tuningDirection)
                     ),
+                    isLeftSide = true,
                     onRotationChange = {},
                     modifier = Modifier.graphicsLayer {
                         translationX = x
@@ -124,11 +125,12 @@ private fun TunersLayout(
                 val x = (position.startX - tunerRadius + spec.knobsXOffsets[string]!!) * scale + offsetX  // Subtract radius to center horizontally
                 val y = (position.startY - tunerRadius) * scale + offsetY  // Subtract radius to center vertically
 
-                RightTunerWithNote(
+                GuitarTunerKnob(
                     tuner = TunerState(
                         note = string.fullNoteName(),
                         rotation = getKnobRotation(string, activeString, tuningDirection)
                     ),
+                    isLeftSide = false,
                     onRotationChange = {},
                     modifier = Modifier.graphicsLayer {
                         translationX = x

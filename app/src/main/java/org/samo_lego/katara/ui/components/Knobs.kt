@@ -10,56 +10,58 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 data class TunerState(val note: String, val rotation: Float = 0f, val isActive: Boolean = false)
 
 @Composable
-fun LeftTunerWithNote(
+fun GuitarTunerKnob(
     tuner: TunerState,
+    isLeftSide: Boolean,
     onRotationChange: (Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier) {  // Use Box instead of Row for precise positioning
+    Box(modifier = modifier) {
+        // Center the knob
         TunerKnob(
             rotation = tuner.rotation,
             onRotationChange = onRotationChange,
-            modifier = Modifier.align(Alignment.Center)  // Center the knob in the Box
+            modifier = Modifier.align(Alignment.Center)
         )
+
+        // Position text based on side
         Text(
             text = tuner.note,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
             modifier = Modifier
-                .align(Alignment.CenterEnd)  // Align text to the right of the knob
-                .offset(x = (-32).dp)  // Offset text to the left of the knob
+                .align(if (isLeftSide) Alignment.CenterEnd else Alignment.CenterStart)
+                .offset(x = if (isLeftSide) (-32).dp else 32.dp)
         )
     }
 }
 
+
+@Preview
 @Composable
-fun RightTunerWithNote(
-    tuner: TunerState,
-    onRotationChange: (Float) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(modifier = modifier) {  // Use Box instead of Row for precise positioning
-        TunerKnob(
-            rotation = tuner.rotation,
-            onRotationChange = onRotationChange,
-            modifier = Modifier.align(Alignment.Center)  // Center the knob in the Box
-        )
-        Text(
-            text = tuner.note,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .align(Alignment.CenterStart)  // Align text to the left of the knob
-                .offset(x = 32.dp)  // Offset text to the right of the knob
-        )
-    }
+fun LeftKnobPreview() {
+    GuitarTunerKnob(
+        isLeftSide = true,
+        tuner = TunerState(note = "E2", isActive = true),
+        onRotationChange = {},
+    )
+}
+
+@Preview
+@Composable
+fun RighttKnobPreview() {
+    GuitarTunerKnob(
+        isLeftSide = false,
+        tuner = TunerState(note = "E2", isActive = true),
+        onRotationChange = {},
+    )
 }
 
 
