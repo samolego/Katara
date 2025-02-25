@@ -10,59 +10,80 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.ui.components.GuitarImage
 import org.samo_lego.katara.util.GuitarString
+import org.samo_lego.katara.util.TuningDirection
 
 @OptIn(ExperimentalLayoutApi::class)
-@Preview
 @Composable
-fun GuitarComponent() {
-    var activeString = remember { mutableStateOf<GuitarString?>(null) }
+fun GuitarComponent(
+    activeString: GuitarString?,
+    tuningDirection: MutableState<TuningDirection>,
+    onActiveStringChange: (GuitarString) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var tuningValue = remember { mutableStateOf(0f) }
 
-    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-
+    Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         // Guitar display with highlighted string
         GuitarImage(
-                activeString = activeString.value,
+            activeString = activeString,
         )
 
         // String selection buttons
         FlowRow(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             GuitarString.entries.forEach { guitarString ->
                 Button(
-                        onClick = {
-                            activeString.value = if (activeString.value == guitarString) null else guitarString
-                        },
-                        colors =
-                                ButtonDefaults.buttonColors(
-                                        containerColor =
-                                                if (activeString.value == guitarString) Color(0xFFFF9800)
-                                                else MaterialTheme.colorScheme.primary
-                                ),
-                        modifier = Modifier.padding(4.dp)
-                ) { Text(guitarString.fullNoteName(), textAlign = TextAlign.Center) }
+                    onClick = { onActiveStringChange(guitarString) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (activeString == guitarString)
+                            Color(0xFFFF9800)
+                        else
+                            MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier.padding(4.dp)
+                ) {
+                    Text(guitarString.fullNoteName(), textAlign = TextAlign.Center)
+                }
             }
         }
 
         // Display which string is active
-        activeString.value?.let {
+        activeString?.let {
             Text(
-                    text = "String ${it.stringNumber}: ${it.fullNoteName()}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                text = "String ${it.stringNumber}: ${it.fullNoteName()}",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            Slider(
+                value = tuningValue.value,
+                onValueChange = { newValue ->
+                    tuningValue.value = newValue
+                    tuningDirection.value = when {
+                        newValue > 0 -> TuningDirection.UP
+                        newValue < 0 -> TuningDirection.DOWN
+                        else -> TuningDirection.NONE
+                    }
+                },
+                valueRange = -1f..1f,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             )
         }
     }

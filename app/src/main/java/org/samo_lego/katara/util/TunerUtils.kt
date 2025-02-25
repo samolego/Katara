@@ -3,22 +3,29 @@ package org.samo_lego.katara.util
 import org.samo_lego.katara.model.TunerPosition
 
 object TunerUtils {
+    // Tuner positions from the SVG file
+    // Center coordinates of the tuner knobs (x, y)
+    private val LEFT_TUNER_POSITIONS = listOf(
+        TunerPosition(36f, 63f),  // D3
+        TunerPosition(36f, 143f), // A2
+        TunerPosition(36f, 223f)  // E2
+    )
 
-    // Tuner positions from the SVG
-    private val TUNER_Y_POSITIONS = listOf(175f, 260f, 340f)
-    private const val LEFT_TUNER_X = 40f
-    private const val RIGHT_TUNER_X = -40f
+    private val RIGHT_TUNER_POSITIONS = listOf(
+        TunerPosition(116f, 63f),  // G3
+        TunerPosition(116f, 143f), // B3
+        TunerPosition(116f, 223f)  // E4
+    )
+
+    // SVG viewport dimensions (from the vector tag)
+    const val SVG_VIEWPORT_WIDTH = 153f
+    const val SVG_VIEWPORT_HEIGHT = 326f
+
+    // Size of the tuner knob from SVG (outer circle diameter)
+    const val TUNER_KNOB_SIZE = 24f // Based on the SVG path (48-24=24)
 
     fun calculateTunerPositions(): Pair<List<TunerPosition>, List<TunerPosition>> {
-        val leftTuners = TUNER_Y_POSITIONS.map { y ->
-            TunerPosition(LEFT_TUNER_X, y)
-        }
-
-        val rightTuners = TUNER_Y_POSITIONS.map { y ->
-            TunerPosition(RIGHT_TUNER_X, y)
-        }
-
-        return Pair(leftTuners, rightTuners)
+        return Pair(LEFT_TUNER_POSITIONS, RIGHT_TUNER_POSITIONS)
     }
 }
 

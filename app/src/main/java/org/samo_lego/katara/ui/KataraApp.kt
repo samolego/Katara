@@ -14,32 +14,24 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.R
-import org.samo_lego.katara.ui.components.TunerState
-import org.samo_lego.katara.util.TunerUtils
+import org.samo_lego.katara.ui.components.TunerLayout
+import org.samo_lego.katara.util.GuitarString
+import org.samo_lego.katara.util.TuningDirection
 
 @Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KataraApp() {
-    //val tunerStates by viewModel.tunerStates.collectAsState()
-    val tunerStates = remember {
-        mutableStateListOf(
-            TunerState("D3"),
-            TunerState("A2"),
-            TunerState("E2"),
-            TunerState("G3"),
-            TunerState("B3"),
-            TunerState("E4")
-        )
-    }
-    val (leftTunerPositions, rightTunerPositions) = TunerUtils.calculateTunerPositions()
+    var activeString = remember { mutableStateOf<GuitarString?>(null) }
+    var tuningDirection = remember { mutableStateOf(TuningDirection.NONE) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -62,7 +54,18 @@ fun KataraApp() {
                     modifier = Modifier.weight(1f).fillMaxWidth(),
                     contentAlignment = Alignment.TopCenter
                 ) {
-                    GuitarComponent()
+                    TunerLayout(
+                            activeString = activeString.value,
+                            tuningDirection = tuningDirection.value,
+                            modifier = Modifier.padding(vertical = 16.dp)
+                        )
+                        GuitarComponent(
+                            activeString = activeString.value,
+                            tuningDirection = tuningDirection,
+                            onActiveStringChange = { guitarString ->
+                                activeString.value = if (activeString.value == guitarString) null else guitarString
+                            }
+                        )
                 }
             }
         }
