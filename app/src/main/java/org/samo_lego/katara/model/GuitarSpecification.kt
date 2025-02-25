@@ -1,6 +1,5 @@
 package org.samo_lego.katara.model
 
-import androidx.compose.ui.geometry.Offset
 import org.samo_lego.katara.util.GuitarString
 
 /**
@@ -10,13 +9,22 @@ data class GuitarSpecification(
     val viewportWidth: Float,
     val viewportHeight: Float,
     val stringPositions: Map<GuitarString, StringPosition>,
-    val bottomStringY: Float
+    val bottomStringY: Float,
+    val knobsXOffsets: Map<GuitarString, Float>,
 ) {
     companion object {
         val STANDARD_6_STRING = GuitarSpecification(
             viewportWidth = 153f,
             viewportHeight = 326f,
             bottomStringY = 297f,
+            knobsXOffsets = mapOf(
+                GuitarString.D3 to -50f,
+                GuitarString.A2 to -50f,
+                GuitarString.E2 to -50f,
+                GuitarString.G3 to 50f,
+                GuitarString.B3 to 50f,
+                GuitarString.E4 to 50f
+            ),
             stringPositions = mapOf(
                 // Left side (low to high)
                 GuitarString.D3 to StringPosition(36f, 63f, 69f),

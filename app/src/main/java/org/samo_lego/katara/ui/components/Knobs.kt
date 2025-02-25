@@ -16,45 +16,52 @@ data class TunerState(val note: String, val rotation: Float = 0f, val isActive: 
 
 @Composable
 fun LeftTunerWithNote(
-        tuner: TunerState,
-        onRotationChange: (Float) -> Unit,
-        modifier: Modifier = Modifier
+    tuner: TunerState,
+    onRotationChange: (Float) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = modifier
-    ) {
-        Text(
-                text = tuner.note,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center,
+    Box(modifier = modifier) {  // Use Box instead of Row for precise positioning
+        TunerKnob(
+            rotation = tuner.rotation,
+            onRotationChange = onRotationChange,
+            modifier = Modifier.align(Alignment.Center)  // Center the knob in the Box
         )
-        TunerKnob(rotation = tuner.rotation, onRotationChange = onRotationChange)
+        Text(
+            text = tuner.note,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .align(Alignment.CenterEnd)  // Align text to the right of the knob
+                .offset(x = (-32).dp)  // Offset text to the left of the knob
+        )
     }
 }
 
 @Composable
 fun RightTunerWithNote(
-        tuner: TunerState,
-        onRotationChange: (Float) -> Unit,
-        modifier: Modifier = Modifier
+    tuner: TunerState,
+    onRotationChange: (Float) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = modifier
-    ) {
-        TunerKnob(rotation = tuner.rotation, onRotationChange = onRotationChange)
+    Box(modifier = modifier) {  // Use Box instead of Row for precise positioning
+        TunerKnob(
+            rotation = tuner.rotation,
+            onRotationChange = onRotationChange,
+            modifier = Modifier.align(Alignment.Center)  // Center the knob in the Box
+        )
         Text(
-                text = tuner.note,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center,
+            text = tuner.note,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .align(Alignment.CenterStart)  // Align text to the left of the knob
+                .offset(x = 32.dp)  // Offset text to the right of the knob
         )
     }
 }
+
 
 @Composable
 private fun TunerKnob(

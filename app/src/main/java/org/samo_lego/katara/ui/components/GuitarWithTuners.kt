@@ -93,13 +93,16 @@ private fun TunersLayout(
     offsetY: Float,
     modifier: Modifier = Modifier
 ) {
+    // Size of the tuner knob in SVG coordinates
+    val tunerRadius = 12f
+
     Box(modifier = modifier) {
         // Left side tuners
         spec.stringPositions
             .filter { (string, _) -> string in listOf(GuitarString.D3, GuitarString.A2, GuitarString.E2) }
             .forEach { (string, position) ->
-                val x = position.startX * scale + offsetX
-                val y = position.startY * scale + offsetY
+                val x = (position.startX - tunerRadius+ spec.knobsXOffsets[string]!!) * scale + offsetX  // Subtract radius to center horizontally
+                val y = (position.startY - tunerRadius) * scale + offsetY  // Subtract radius to center vertically
 
                 LeftTunerWithNote(
                     tuner = TunerState(
@@ -118,8 +121,8 @@ private fun TunersLayout(
         spec.stringPositions
             .filter { (string, _) -> string in listOf(GuitarString.G3, GuitarString.B3, GuitarString.E4) }
             .forEach { (string, position) ->
-                val x = position.startX * scale + offsetX
-                val y = position.startY * scale + offsetY
+                val x = (position.startX - tunerRadius + spec.knobsXOffsets[string]!!) * scale + offsetX  // Subtract radius to center horizontally
+                val y = (position.startY - tunerRadius) * scale + offsetY  // Subtract radius to center vertically
 
                 RightTunerWithNote(
                     tuner = TunerState(
