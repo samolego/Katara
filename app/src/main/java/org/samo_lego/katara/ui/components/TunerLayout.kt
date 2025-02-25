@@ -3,59 +3,62 @@ package org.samo_lego.katara.ui.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
+import org.samo_lego.katara.model.GuitarSpecification
 import org.samo_lego.katara.util.GuitarString
+import org.samo_lego.katara.util.TunerUtils
 import org.samo_lego.katara.util.TuningDirection
 
 @Composable
 fun TunerLayout(
     activeString: GuitarString?,
     tuningDirection: TuningDirection,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    spec: GuitarSpecification = GuitarSpecification.STANDARD_6_STRING,
+    imageSize: Float = 0.7f
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+    val (leftTuners, rightTuners) = TunerUtils.calculateTunerPositions(spec)
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .aspectRatio(spec.viewportWidth / spec.viewportHeight)
+            .scale(imageSize)
     ) {
-        // Left side tuners
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(start = 16.dp)
-        ) {
+        leftTuners.forEach { (string, position) ->
             LeftTunerWithNote(
-                tuner = TunerState("D3", getRotation(GuitarString.D3, activeString, tuningDirection)),
-                onRotationChange = {}
-            )
-            LeftTunerWithNote(
-                tuner = TunerState("A2", getRotation(GuitarString.A2, activeString, tuningDirection)),
-                onRotationChange = {}
-            )
-            LeftTunerWithNote(
-                tuner = TunerState("E2", getRotation(GuitarString.E2, activeString, tuningDirection)),
-                onRotationChange = {}
+                tuner = TunerState(
+                    note = string.fullNoteName(),
+                    rotation = getRotation(string, activeString, tuningDirection)
+                ),
+                onRotationChange = {},
+                modifier = Modifier.absoluteOffset(
+                    x = position.x.dp,
+                    y = position.y.dp
+                )
             )
         }
 
-        // Right side tuners
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(end = 16.dp)
-        ) {
+        rightTuners.forEach { (string, position) ->
             RightTunerWithNote(
-                tuner = TunerState("G3", getRotation(GuitarString.G3, activeString, tuningDirection)),
-                onRotationChange = {}
-            )
-            RightTunerWithNote(
-                tuner = TunerState("B3", getRotation(GuitarString.B3, activeString, tuningDirection)),
-                onRotationChange = {}
-            )
-            RightTunerWithNote(
-                tuner = TunerState("E4", getRotation(GuitarString.E4, activeString, tuningDirection)),
-                onRotationChange = {}
+                tuner = TunerState(
+                    note = string.fullNoteName(),
+                    rotation = getRotation(string, activeString, tuningDirection)
+                ),
+                onRotationChange = {},
+                modifier = Modifier.absoluteOffset(
+                    x = position.x.dp,
+                    y = position.y.dp
+                )
             )
         }
     }
 }
+
+
+
+
 
 private fun getRotation(
     knobString: GuitarString,

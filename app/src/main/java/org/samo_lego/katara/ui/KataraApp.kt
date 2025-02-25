@@ -20,9 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.R
-import org.samo_lego.katara.ui.components.TunerLayout
 import org.samo_lego.katara.util.GuitarString
 import org.samo_lego.katara.util.TuningDirection
 
@@ -54,18 +52,13 @@ fun KataraApp() {
                     modifier = Modifier.weight(1f).fillMaxWidth(),
                     contentAlignment = Alignment.TopCenter
                 ) {
-                    TunerLayout(
-                            activeString = activeString.value,
-                            tuningDirection = tuningDirection.value,
-                            modifier = Modifier.padding(vertical = 16.dp)
-                        )
-                        GuitarComponent(
-                            activeString = activeString.value,
-                            tuningDirection = tuningDirection,
-                            onActiveStringChange = { guitarString ->
-                                activeString.value = if (activeString.value == guitarString) null else guitarString
-                            }
-                        )
+                    GuitarComponent(
+                        activeString = activeString.value,
+                        tuningDirection = tuningDirection,
+                        onActiveStringChange = { guitarString ->
+                            activeString.value = if (activeString.value == guitarString) null else guitarString
+                        }
+                    )
                 }
             }
         }
