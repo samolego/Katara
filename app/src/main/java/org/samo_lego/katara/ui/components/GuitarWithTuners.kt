@@ -17,28 +17,25 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.R
 import org.samo_lego.katara.model.GuitarSpecification
-import org.samo_lego.katara.util.GuitarString
+import org.samo_lego.katara.util.InstrumentString
 import org.samo_lego.katara.util.TuningDirection
 
 @Composable
 fun GuitarWithTuners(
-    activeString: GuitarString?,
-    tuningDirection: TuningDirection,
-    modifier: Modifier = Modifier,
-    spec: GuitarSpecification = GuitarSpecification.STANDARD_6_STRING,
-    imageSize: Float = 0.7f
+        activeString: InstrumentString?,
+        tuningDirection: TuningDirection,
+        modifier: Modifier = Modifier,
+        spec: GuitarSpecification = GuitarSpecification.STANDARD_6_STRING,
+        imageSize: Float = 0.7f
 ) {
     var size = remember { mutableStateOf(IntSize.Zero) }
 
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Box(
-            modifier = Modifier
-                .fillMaxSize(imageSize)
-                .padding(8.dp)
-                .onSizeChanged { size.value = it }
+                modifier =
+                        Modifier.fillMaxSize(imageSize).padding(8.dp).onSizeChanged {
+                            size.value = it
+                        }
         ) {
             val width = size.value.width.toFloat()
             val height = size.value.height.toFloat()
@@ -51,33 +48,32 @@ fun GuitarWithTuners(
             val offsetX = (width - (spec.viewportWidth * scale)) / 2f
             val offsetY = (height - (spec.viewportHeight * scale)) / 2f
 
-
             // Base guitar image
             Image(
-                painter = painterResource(id = R.drawable.guitar),
-                contentDescription = "Guitar Headstock",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit
+                    painter = painterResource(id = R.drawable.guitar_standard),
+                    contentDescription = "Guitar Headstock",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
             )
 
             // Active string highlight overlay
             if (activeString != null) {
                 ActiveStringOverlay(
-                    activeString = activeString,
-                    spec = spec,
-                    modifier = Modifier.fillMaxSize()
+                        activeString = activeString,
+                        spec = spec,
+                        modifier = Modifier.fillMaxSize()
                 )
             }
 
             // Tuners overlay
             TunersLayout(
-                activeString = activeString,
-                tuningDirection = tuningDirection,
-                spec = spec,
-                scale = scale,
-                offsetX = offsetX,
-                offsetY = offsetY,
-                modifier = Modifier.fillMaxSize()
+                    activeString = activeString,
+                    tuningDirection = tuningDirection,
+                    spec = spec,
+                    scale = scale,
+                    offsetX = offsetX,
+                    offsetY = offsetY,
+                    modifier = Modifier.fillMaxSize()
             )
         }
     }
@@ -85,66 +81,78 @@ fun GuitarWithTuners(
 
 @Composable
 private fun TunersLayout(
-    activeString: GuitarString?,
-    tuningDirection: TuningDirection,
-    spec: GuitarSpecification,
-    scale: Float,
-    offsetX: Float,
-    offsetY: Float,
-    modifier: Modifier = Modifier
+        activeString: InstrumentString?,
+        tuningDirection: TuningDirection,
+        spec: GuitarSpecification,
+        scale: Float,
+        offsetX: Float,
+        offsetY: Float,
+        modifier: Modifier = Modifier
 ) {
     // Size of the tuner knob in SVG coordinates
     val tunerRadius = 12f
 
     Box(modifier = modifier) {
         // Left side tuners
-        spec.stringPositions
-            .filter { (string, _) -> string in listOf(GuitarString.D3, GuitarString.A2, GuitarString.E2) }
-            .forEach { (string, position) ->
-                val x = (position.startX - tunerRadius+ spec.knobsXOffsets[string]!!) * scale + offsetX  // Subtract radius to center horizontally
-                val y = (position.startY - tunerRadius) * scale + offsetY  // Subtract radius to center vertically
+        spec.stringPositions.filter { (string, _) -> string.stringNumber > 3 }.forEach {
+                (string, position) ->
+            val x =
+                    (position.startX - tunerRadius + spec.knobsXOffsets[string]!!) * scale +
+                            offsetX // Subtract radius to center horizontally
+            val y =
+                    (position.startY - tunerRadius) * scale +
+                            offsetY // Subtract radius to center vertically
 
-                GuitarTunerKnob(
-                    tuner = TunerState(
-                        note = string.fullNoteName(),
-                        rotation = getKnobRotation(string, activeString, tuningDirection)
-                    ),
+            GuitarTunerKnob(
+                    tuner =
+                            TunerState(
+                                    note = string.fullNoteName(),
+                                    rotation =
+                                            getKnobRotation(string, activeString, tuningDirection)
+                            ),
                     isLeftSide = true,
                     onRotationChange = {},
-                    modifier = Modifier.graphicsLayer {
-                        translationX = x
-                        translationY = y
-                    }
-                )
-            }
+                    modifier =
+                            Modifier.graphicsLayer {
+                                translationX = x
+                                translationY = y
+                            }
+            )
+        }
 
         // Right side tuners
-        spec.stringPositions
-            .filter { (string, _) -> string in listOf(GuitarString.G3, GuitarString.B3, GuitarString.E4) }
-            .forEach { (string, position) ->
-                val x = (position.startX - tunerRadius + spec.knobsXOffsets[string]!!) * scale + offsetX  // Subtract radius to center horizontally
-                val y = (position.startY - tunerRadius) * scale + offsetY  // Subtract radius to center vertically
+        spec.stringPositions.filter { (string, _) -> string.stringNumber <= 3 }.forEach {
+                (string, position) ->
+            val x =
+                    (position.startX - tunerRadius + spec.knobsXOffsets[string]!!) * scale +
+                            offsetX // Subtract radius to center horizontally
+            val y =
+                    (position.startY - tunerRadius) * scale +
+                            offsetY // Subtract radius to center vertically
 
-                GuitarTunerKnob(
-                    tuner = TunerState(
-                        note = string.fullNoteName(),
-                        rotation = getKnobRotation(string, activeString, tuningDirection)
-                    ),
+            GuitarTunerKnob(
+                    tuner =
+                            TunerState(
+                                    note = string.fullNoteName(),
+                                    rotation =
+                                            getKnobRotation(string, activeString, tuningDirection)
+                            ),
                     isLeftSide = false,
                     onRotationChange = {},
-                    modifier = Modifier.graphicsLayer {
-                        translationX = x
-                        translationY = y
-                    }
-                )
-            }
+                    modifier =
+                            Modifier.graphicsLayer {
+                                translationX = x
+                                translationY = y
+                            }
+            )
+        }
     }
 }
 
 private fun getKnobRotation(
-    knobString: GuitarString,
-    activeString: GuitarString?,
-    tuningDirection: TuningDirection
+        knobString: InstrumentString,
+        activeString: InstrumentString?,
+        tuningDirection: TuningDirection
 ): Float {
     if (knobString != activeString) return 0f
     return when (tuningDirection) {

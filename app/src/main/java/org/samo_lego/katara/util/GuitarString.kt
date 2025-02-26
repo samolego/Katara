@@ -1,24 +1,53 @@
 package org.samo_lego.katara.util
 
-/**
- * Represents guitar strings in standard tuning. The strings are ordered from high to low by
- * frequency.
- */
-enum class GuitarString(val stringNumber: Int, val noteName: String, val octave: Int) {
-    E2(6, "E", 2), // Low E (6th string)
-    A2(5, "A", 2),
-    D3(4, "D", 3),
-    G3(3, "G", 3),
-    B3(2, "B", 3),
-    E4(1, "E", 4); // High E (1st string)
+enum class Note(val noteName: String) {
+    A("A"),
+    A_SHARP("A#"),
+    B("B"),
+    C("C"),
+    C_SHARP("C#"),
+    D("D"),
+    D_SHARP("D#"),
+    E("E"),
+    F("F"),
+    F_SHARP("F#"),
+    G("G"),
+    G_SHARP("G#")
+}
 
-    /** Returns the full note name including octave (e.g., "E4") */
-    fun fullNoteName(): String = "$noteName$octave"
+data class InstrumentString(val stringNumber: Int, val note: Note, val octave: Int) {
+    fun fullNoteName(): String = "${note.noteName}$octave"
+}
 
-    companion object {
-        /** Find a guitar string by string number (1-6) */
-        fun fromStringNumber(number: Int): GuitarString? {
-            return GuitarString.entries.find { it.stringNumber == number }
-        }
+enum class InstrumentType(val strings: List<InstrumentString>) {
+    GUITAR_STANDARD(
+            listOf(
+                    InstrumentString(1, Note.E, 4),
+                    InstrumentString(2, Note.B, 3),
+                    InstrumentString(3, Note.G, 3),
+                    InstrumentString(4, Note.D, 3),
+                    InstrumentString(5, Note.A, 2),
+                    InstrumentString(6, Note.E, 2)
+            )
+    ),
+    /*BASS_STANDARD(
+            listOf(
+                    InstrumentString(1, Note.G, 2),
+                    InstrumentString(2, Note.D, 2),
+                    InstrumentString(3, Note.A, 1),
+                    InstrumentString(4, Note.E, 1)
+            )
+    ),
+    UKULELE_STANDARD(
+            listOf(
+                    InstrumentString(1, Note.A, 4),
+                    InstrumentString(2, Note.E, 4),
+                    InstrumentString(3, Note.C, 4),
+                    InstrumentString(4, Note.G, 4)
+            )
+    )*/;
+
+    fun getStringByNumber(number: Int): InstrumentString? {
+        return strings.find { it.stringNumber == number }
     }
 }

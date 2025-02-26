@@ -23,15 +23,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.ui.components.GuitarWithTuners
-import org.samo_lego.katara.util.GuitarString
+import org.samo_lego.katara.util.InstrumentString
+import org.samo_lego.katara.util.InstrumentType
 import org.samo_lego.katara.util.TuningDirection
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GuitarComponent(
-    activeString: GuitarString?,
+    activeString: InstrumentString?,
     tuningDirection: MutableState<TuningDirection>,
-    onActiveStringChange: (GuitarString) -> Unit,
+    onActiveStringChange: (InstrumentString) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var tuningValue = remember { mutableFloatStateOf(0f) }
@@ -60,7 +61,7 @@ fun GuitarComponent(
                     .padding(horizontal = 8.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                GuitarString.entries.forEach { guitarString ->
+                InstrumentType.GUITAR_STANDARD.strings.forEach { guitarString ->
                     Button(
                         onClick = { onActiveStringChange(guitarString) },
                         colors = ButtonDefaults.buttonColors(

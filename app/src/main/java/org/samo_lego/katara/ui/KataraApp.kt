@@ -21,14 +21,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import org.samo_lego.katara.R
-import org.samo_lego.katara.util.GuitarString
+import org.samo_lego.katara.util.InstrumentString
 import org.samo_lego.katara.util.TuningDirection
 
 @Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KataraApp() {
-    var activeString = remember { mutableStateOf<GuitarString?>(null) }
+    var activeString = remember { mutableStateOf<InstrumentString?>(null) }
     var tuningDirection = remember { mutableStateOf(TuningDirection.NONE) }
 
     Scaffold(
