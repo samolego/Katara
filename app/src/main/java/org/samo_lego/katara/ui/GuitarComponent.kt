@@ -77,8 +77,8 @@ fun GuitarComponent(
                             tuningValue.floatValue = newValue
                             tuningDirection.value =
                                     when {
-                                        newValue > 0 -> TuningDirection.TOO_LOW
-                                        newValue < 0 -> TuningDirection.TOO_HIGH
+                                        newValue > 0.2 -> TuningDirection.TOO_HIGH
+                                        newValue < -0.2 -> TuningDirection.TOO_LOW
                                         else -> TuningDirection.IN_TUNE
                                     }
                         },

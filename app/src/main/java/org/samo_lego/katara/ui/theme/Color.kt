@@ -11,3 +11,6 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 val StringHighlight = Color(0xFFFF9800)
+val TuneTooLow = Color(0xFF006CBE)
+val TuneOk = Color(0xFF008C00)
+val TuneTooHigh = Color(0xFFBE5200)
