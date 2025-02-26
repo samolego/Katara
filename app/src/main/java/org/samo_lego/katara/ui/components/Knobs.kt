@@ -94,6 +94,7 @@ private fun TunerKnob(
     val scaleXYAnim = remember { Animatable(1f) }
     val elevationAnim = remember { Animatable(4f) }
     val rotationXAnim = remember { Animatable(0f) }
+    val rotationYAnim = remember { Animatable(-15f) }
 
     // Use consistent animation specs to ensure uniform animation speeds
     val slowRotationSpec: AnimationSpec<Float> = tween(durationMillis = 2000, easing = FastOutSlowInEasing)
