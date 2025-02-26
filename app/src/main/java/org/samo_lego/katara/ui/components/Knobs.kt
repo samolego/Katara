@@ -22,7 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -77,95 +77,112 @@ private fun TunerKnob(
         onRotationChange: (Float) -> Unit,
         modifier: Modifier = Modifier
 ) {
-    // Create an infinite transition for continuous rotation
-    val infiniteTransition = rememberInfiniteTransition(label = "Knob rotation transition")
+    // Create an infinite transition for continuous flipping
+    val infiniteTransition = rememberInfiniteTransition(label = "Knob flipping transition")
 
-    // Animate based on tuning direction
-    val animatedRotation by
-            when (tuningDirection) {
-                TuningDirection.TOO_LOW -> {
-                    // Rotate from bottom to top (180 to 0 degrees) if active
-                    if (isActive) {
-                        infiniteTransition.animateFloat(
-                                initialValue = 180f,
-                                targetValue = 0f,
-                                animationSpec =
-                                        infiniteRepeatable(
-                                                animation = tween(800, easing = LinearEasing),
-                                                repeatMode = RepeatMode.Restart
-                                        ),
-                                label = "Knob rotation too low"
-                        )
-                    } else {
-                        infiniteTransition.animateFloat(
-                                initialValue = rotation,
-                                targetValue = rotation,
-                                animationSpec =
-                                        infiniteRepeatable(
-                                                animation = tween(1000),
-                                                repeatMode = RepeatMode.Restart
-                                        ),
-                                label = "Static rotation"
-                        )
-                    }
-                }
-                TuningDirection.TOO_HIGH -> {
-                    // Rotate from top to bottom (0 to 180 degrees) if active
-                    if (isActive) {
-                        infiniteTransition.animateFloat(
-                                initialValue = 0f,
-                                targetValue = 180f,
-                                animationSpec =
-                                        infiniteRepeatable(
-                                                animation = tween(800, easing = LinearEasing),
-                                                repeatMode = RepeatMode.Restart
-                                        ),
-                                label = "Knob rotation too high"
-                        )
-                    } else {
-                        infiniteTransition.animateFloat(
-                                initialValue = rotation,
-                                targetValue = rotation,
-                                animationSpec =
-                                        infiniteRepeatable(
-                                                animation = tween(1000),
-                                                repeatMode = RepeatMode.Restart
-                                        ),
-                                label = "Static rotation"
-                        )
-                    }
-                }
-                TuningDirection.IN_TUNE -> {
-                    // No rotation animation when in tune
+    // Animate scaleY for flipping effect
+    val animatedScaleY by
+            when {
+                isActive && tuningDirection == TuningDirection.TOO_LOW -> {
+                    // Flip from bottom to top when too low
                     infiniteTransition.animateFloat(
-                            initialValue = rotation,
-                            targetValue = rotation,
+                            initialValue = -1f,
+                            targetValue = 1f,
+                            animationSpec =
+                                    infiniteRepeatable(
+                                            animation = tween(800, easing = LinearEasing),
+                                            repeatMode = RepeatMode.Reverse
+                                    ),
+                            label = "Knob flipping too low"
+                    )
+                }
+                isActive && tuningDirection == TuningDirection.TOO_HIGH -> {
+                    // Flip from top to bottom when too high
+                    infiniteTransition.animateFloat(
+                            initialValue = 1f,
+                            targetValue = -1f,
+                            animationSpec =
+                                    infiniteRepeatable(
+                                            animation = tween(800, easing = LinearEasing),
+                                            repeatMode = RepeatMode.Reverse
+                                    ),
+                            label = "Knob flipping too high"
+                    )
+                }
+                else -> {
+                    // No flipping when in tune or inactive
+                    infiniteTransition.animateFloat(
+                            initialValue = 1f,
+                            targetValue = 1f,
                             animationSpec =
                                     infiniteRepeatable(
                                             animation = tween(1000),
-                                            repeatMode = RepeatMode.Restart
+                                            repeatMode = RepeatMode.Reverse
+                                    ),
+                            label = "Static scale"
+                    )
+                }
+            }
+
+    // Add a slight rotation to enhance 3D effect during flipping
+    val enhancementRotation by
+            when {
+                isActive &&
+                        (tuningDirection == TuningDirection.TOO_LOW ||
+                                tuningDirection == TuningDirection.TOO_HIGH) -> {
+                    infiniteTransition.animateFloat(
+                            initialValue = -5f,
+                            targetValue = 5f,
+                            animationSpec =
+                                    infiniteRepeatable(
+                                            animation = tween(800, easing = LinearEasing),
+                                            repeatMode = RepeatMode.Reverse
+                                    ),
+                            label = "Enhancement rotation"
+                    )
+                }
+                else -> {
+                    infiniteTransition.animateFloat(
+                            initialValue = 0f,
+                            targetValue = 0f,
+                            animationSpec =
+                                    infiniteRepeatable(
+                                            animation = tween(1000),
+                                            repeatMode = RepeatMode.Reverse
                                     ),
                             label = "Static rotation"
                     )
                 }
             }
 
+    // Determine knob color based on active state and tuning direction
+    val knobColor =
+            if (isActive) {
+                when (tuningDirection) {
+                    TuningDirection.IN_TUNE -> MaterialTheme.colorScheme.secondaryContainer
+                    TuningDirection.TOO_LOW -> MaterialTheme.colorScheme.errorContainer
+                    TuningDirection.TOO_HIGH -> MaterialTheme.colorScheme.tertiaryContainer
+                }
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            }
+
     Surface(
             modifier =
-                    modifier.size(24.dp).rotate(animatedRotation).pointerInput(Unit) {
-                        detectDragGestures { change, dragAmount ->
-                            change.consume()
-                            // Manual rotation still available if needed
-                            onRotationChange(rotation + dragAmount.y)
-                        }
-                    },
+                    modifier.size(24.dp)
+                            .graphicsLayer {
+                                scaleY = animatedScaleY
+                                rotationX = enhancementRotation
+                            }
+                            .pointerInput(Unit) {
+                                detectDragGestures { change, dragAmount ->
+                                    change.consume()
+                                    // Manual rotation still available if needed
+                                    onRotationChange(rotation + dragAmount.y)
+                                }
+                            },
             shape = MaterialTheme.shapes.small,
-            color =
-                    when (tuningDirection) {
-                        TuningDirection.IN_TUNE -> MaterialTheme.colorScheme.secondaryContainer
-                        TuningDirection.TOO_LOW -> MaterialTheme.colorScheme.errorContainer
-                        TuningDirection.TOO_HIGH -> MaterialTheme.colorScheme.tertiaryContainer
-                    }
+            color = knobColor
     ) {}
 }
 

@@ -30,75 +30,60 @@ import org.samo_lego.katara.util.TuningDirection
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GuitarComponent(
-    activeString: InstrumentString?,
-    tuningDirection: MutableState<TuningDirection>,
-    onActiveStringChange: (InstrumentString) -> Unit,
-    modifier: Modifier = Modifier
+        activeString: InstrumentString?,
+        tuningDirection: MutableState<TuningDirection>,
+        onActiveStringChange: (InstrumentString) -> Unit,
+        modifier: Modifier = Modifier
 ) {
     var tuningValue = remember { mutableFloatStateOf(0f) }
 
     Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         // Guitar display with highlighted string
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        ) {
-            GuitarWithTuners(
-                activeString = activeString,
-                tuningDirection = tuningDirection.value
-            )
+        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            GuitarWithTuners(activeString = activeString, tuningDirection = tuningDirection.value)
         }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             // String selection buttons
             FlowRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                InstrumentType.GUITAR_STANDARD.strings.forEach { guitarString ->
+                InstrumentType.GUITAR_STANDARD.strings.reversed().forEach { guitarString ->
                     Button(
-                        onClick = { onActiveStringChange(guitarString) },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (activeString == guitarString)
-                                Color(0xFFFF9800)
-                            else
-                                MaterialTheme.colorScheme.primary
-                        ),
-                        modifier = Modifier.padding(4.dp)
-                    ) {
-                        Text(guitarString.fullNoteName(), textAlign = TextAlign.Center)
-                    }
+                            onClick = { onActiveStringChange(guitarString) },
+                            colors =
+                                    ButtonDefaults.buttonColors(
+                                            containerColor =
+                                                    if (activeString == guitarString)
+                                                            Color(0xFFFF9800)
+                                                    else MaterialTheme.colorScheme.primary
+                                    ),
+                            modifier = Modifier.padding(4.dp)
+                    ) { Text(guitarString.fullNoteName(), textAlign = TextAlign.Center) }
                 }
             }
 
             // Display which string is active
             activeString?.let {
                 Text(
-                    text = "String ${it.stringNumber}: ${it.fullNoteName()}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                        text = "String ${it.stringNumber}: ${it.fullNoteName()}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(bottom = 16.dp)
                 )
 
                 Slider(
-                    value = tuningValue.floatValue,
-                    onValueChange = { newValue ->
-                        tuningValue.floatValue = newValue
-                        tuningDirection.value = when {
-                            newValue > 0 -> TuningDirection.TOO_LOW
-                            newValue < 0 -> TuningDirection.TOO_HIGH
-                            else -> TuningDirection.IN_TUNE
-                        }
-                    },
-                    valueRange = -1f..1f,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        value = tuningValue.floatValue,
+                        onValueChange = { newValue ->
+                            tuningValue.floatValue = newValue
+                            tuningDirection.value =
+                                    when {
+                                        newValue > 0 -> TuningDirection.TOO_LOW
+                                        newValue < 0 -> TuningDirection.TOO_HIGH
+                                        else -> TuningDirection.IN_TUNE
+                                    }
+                        },
+                        valueRange = -1f..1f,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
                 )
             }
         }

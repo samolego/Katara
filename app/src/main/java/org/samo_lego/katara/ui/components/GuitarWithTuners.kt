@@ -93,9 +93,7 @@ private fun TunersLayout(
     val tunerRadius = 12f
 
     Box(modifier = modifier) {
-        // Left side tuners
-        spec.stringPositions.filter { (string, _) -> string.stringNumber > 3 }.forEach {
-                (string, position) ->
+        spec.stringPositions.forEach { (string, position) ->
             val x =
                     (position.startX - tunerRadius + spec.knobsXOffsets[string]!!) * scale +
                             offsetX // Subtract radius to center horizontally
@@ -107,35 +105,10 @@ private fun TunersLayout(
                     tuner =
                             TunerState(
                                     note = string.fullNoteName(),
-                                    tuningDirection = tuningDirection
+                                    tuningDirection = tuningDirection,
+                                    isActive = string == activeString,
                             ),
-                    isLeftSide = true,
-                    onRotationChange = {},
-                    modifier =
-                            Modifier.graphicsLayer {
-                                translationX = x
-                                translationY = y
-                            }
-            )
-        }
-
-        // Right side tuners
-        spec.stringPositions.filter { (string, _) -> string.stringNumber <= 3 }.forEach {
-                (string, position) ->
-            val x =
-                    (position.startX - tunerRadius + spec.knobsXOffsets[string]!!) * scale +
-                            offsetX // Subtract radius to center horizontally
-            val y =
-                    (position.startY - tunerRadius) * scale +
-                            offsetY // Subtract radius to center vertically
-
-            GuitarTunerKnob(
-                    tuner =
-                            TunerState(
-                                    note = string.fullNoteName(),
-                                    tuningDirection = tuningDirection
-                            ),
-                    isLeftSide = false,
+                    isLeftSide = string.stringNumber > 3,
                     onRotationChange = {},
                     modifier =
                             Modifier.graphicsLayer {
@@ -146,4 +119,3 @@ private fun TunersLayout(
         }
     }
 }
-
