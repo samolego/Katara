@@ -86,13 +86,13 @@ fun GuitarComponent(
                 )
 
                 Slider(
-                    value = tuningValue.value,
+                    value = tuningValue.floatValue,
                     onValueChange = { newValue ->
-                        tuningValue.value = newValue
+                        tuningValue.floatValue = newValue
                         tuningDirection.value = when {
-                            newValue > 0 -> TuningDirection.UP
-                            newValue < 0 -> TuningDirection.DOWN
-                            else -> TuningDirection.NONE
+                            newValue > 0 -> TuningDirection.TOO_LOW
+                            newValue < 0 -> TuningDirection.TOO_HIGH
+                            else -> TuningDirection.IN_TUNE
                         }
                     },
                     valueRange = -1f..1f,

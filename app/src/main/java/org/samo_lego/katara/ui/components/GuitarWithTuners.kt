@@ -107,8 +107,7 @@ private fun TunersLayout(
                     tuner =
                             TunerState(
                                     note = string.fullNoteName(),
-                                    rotation =
-                                            getKnobRotation(string, activeString, tuningDirection)
+                                    tuningDirection = tuningDirection
                             ),
                     isLeftSide = true,
                     onRotationChange = {},
@@ -134,8 +133,7 @@ private fun TunersLayout(
                     tuner =
                             TunerState(
                                     note = string.fullNoteName(),
-                                    rotation =
-                                            getKnobRotation(string, activeString, tuningDirection)
+                                    tuningDirection = tuningDirection
                             ),
                     isLeftSide = false,
                     onRotationChange = {},
@@ -149,15 +147,3 @@ private fun TunersLayout(
     }
 }
 
-private fun getKnobRotation(
-        knobString: InstrumentString,
-        activeString: InstrumentString?,
-        tuningDirection: TuningDirection
-): Float {
-    if (knobString != activeString) return 0f
-    return when (tuningDirection) {
-        TuningDirection.UP -> 45f
-        TuningDirection.DOWN -> -45f
-        TuningDirection.NONE -> 0f
-    }
-}

@@ -29,7 +29,7 @@ import org.samo_lego.katara.util.TuningDirection
 @Composable
 fun KataraApp() {
     var activeString = remember { mutableStateOf<InstrumentString?>(null) }
-    var tuningDirection = remember { mutableStateOf(TuningDirection.NONE) }
+    var tuningDirection = remember { mutableStateOf(TuningDirection.IN_TUNE) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
