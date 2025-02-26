@@ -31,9 +31,9 @@ data class GuitarSpecification(
                 GuitarString.A2 to StringPosition(36f, 143f, 57f),
                 GuitarString.E2 to StringPosition(36f, 223f, 47f),
                 // Right side (low to high)
-                GuitarString.G3 to StringPosition(115f, 63f, 80f),
-                GuitarString.B3 to StringPosition(115f, 143f, 90f),
-                GuitarString.E4 to StringPosition(115f, 223f, 101f),
+                GuitarString.G3 to StringPosition(116f, 63f, 84f),
+                GuitarString.B3 to StringPosition(116f, 143f, 94f),
+                GuitarString.E4 to StringPosition(116f, 223f, 104f),
             )
         )
     }
