@@ -14,22 +14,17 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.samo_lego.katara.R
-import org.samo_lego.katara.util.InstrumentString
-import org.samo_lego.katara.util.TuningDirection
+import org.samo_lego.katara.viewmodel.GuitarTunerViewModel
 
-@Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KataraApp() {
-    var activeString = remember { mutableStateOf<InstrumentString?>(null) }
-    var tuningDirection = remember { mutableStateOf(TuningDirection.IN_TUNE) }
+    val viewModel: GuitarTunerViewModel = viewModel()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -53,11 +48,11 @@ fun KataraApp() {
                     contentAlignment = Alignment.TopCenter
                 ) {
                     GuitarComponent(
-                        activeString = activeString.value,
-                        tuningDirection = tuningDirection,
-                        onActiveStringChange = { guitarString ->
-                            activeString.value = if (activeString.value == guitarString) null else guitarString
-                        }
+                        activeString = viewModel.activeString.value,
+                        tuningDirection = viewModel.tuningDirection.value,
+                        tuningValue = viewModel.tuningValue.value,
+                        onActiveStringChange = { viewModel.toggleActiveString(it) },
+                        onTuningValueChange = { viewModel.updateTuningValue(it) }
                     )
                 }
             }

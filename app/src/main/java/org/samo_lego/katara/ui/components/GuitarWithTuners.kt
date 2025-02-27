@@ -22,20 +22,20 @@ import org.samo_lego.katara.util.TuningDirection
 
 @Composable
 fun GuitarWithTuners(
-        activeString: InstrumentString?,
-        tuningDirection: TuningDirection,
-        modifier: Modifier = Modifier,
-        spec: GuitarSpecification = GuitarSpecification.STANDARD_6_STRING,
-        imageSize: Float = 0.7f
+    activeString: InstrumentString?,
+    tuningDirection: TuningDirection,
+    modifier: Modifier = Modifier,
+    spec: GuitarSpecification = GuitarSpecification.STANDARD_6_STRING,
+    imageSize: Float = 0.7f
 ) {
-    var size = remember { mutableStateOf(IntSize.Zero) }
+    val size = remember { mutableStateOf(IntSize.Zero) }
 
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Box(
-                modifier =
-                        Modifier.fillMaxSize(imageSize).padding(8.dp).onSizeChanged {
-                            size.value = it
-                        }
+            modifier =
+                Modifier.fillMaxSize(imageSize).padding(8.dp).onSizeChanged {
+                    size.value = it
+                }
         ) {
             val width = size.value.width.toFloat()
             val height = size.value.height.toFloat()
@@ -50,30 +50,30 @@ fun GuitarWithTuners(
 
             // Base guitar image
             Image(
-                    painter = painterResource(id = R.drawable.guitar_standard),
-                    contentDescription = "Guitar Headstock",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
+                painter = painterResource(id = R.drawable.guitar_standard),
+                contentDescription = "Guitar Headstock",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit
             )
 
             // Active string highlight overlay
             if (activeString != null) {
                 ActiveStringOverlay(
-                        activeString = activeString,
-                        spec = spec,
-                        modifier = Modifier.fillMaxSize()
+                    activeString = activeString,
+                    spec = spec,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
 
             // Tuners overlay
             TunersLayout(
-                    activeString = activeString,
-                    tuningDirection = tuningDirection,
-                    spec = spec,
-                    scale = scale,
-                    offsetX = offsetX,
-                    offsetY = offsetY,
-                    modifier = Modifier.fillMaxSize()
+                activeString = activeString,
+                tuningDirection = tuningDirection,
+                spec = spec,
+                scale = scale,
+                offsetX = offsetX,
+                offsetY = offsetY,
+                modifier = Modifier.fillMaxSize()
             )
         }
     }
@@ -81,13 +81,13 @@ fun GuitarWithTuners(
 
 @Composable
 private fun TunersLayout(
-        activeString: InstrumentString?,
-        tuningDirection: TuningDirection,
-        spec: GuitarSpecification,
-        scale: Float,
-        offsetX: Float,
-        offsetY: Float,
-        modifier: Modifier = Modifier
+    activeString: InstrumentString?,
+    tuningDirection: TuningDirection,
+    spec: GuitarSpecification,
+    scale: Float,
+    offsetX: Float,
+    offsetY: Float,
+    modifier: Modifier = Modifier
 ) {
     // Size of the tuner knob in SVG coordinates
     val tunerRadius = 12f
@@ -95,26 +95,28 @@ private fun TunersLayout(
     Box(modifier = modifier) {
         spec.stringPositions.forEach { (string, position) ->
             val x =
-                    (position.startX - tunerRadius + spec.knobsXOffsets[string]!!) * scale +
-                            offsetX // Subtract radius to center horizontally
+                (position.startX - tunerRadius + spec.knobsXOffsets[string]!!) * scale +
+                    offsetX // Subtract radius to center horizontally
             val y =
-                    (position.startY - tunerRadius) * scale +
-                            offsetY // Subtract radius to center vertically
+                (position.startY - tunerRadius) * scale +
+                    offsetY // Subtract radius to center vertically
 
             GuitarTunerKnob(
-                    tuner =
-                            TunerState(
-                                    note = string.fullNoteName(),
-                                    tuningDirection = tuningDirection,
-                                    isActive = string == activeString,
-                            ),
-                    isLeftSide = string.stringNumber > 3,
-                    onRotationChange = {},
-                    modifier =
-                            Modifier.graphicsLayer {
-                                translationX = x
-                                translationY = y
-                            }
+                tuner =
+                    TunerState(
+                        note = string.fullNoteName(),
+                        tuningDirection =
+                            if (string == activeString) tuningDirection
+                            else TuningDirection.IN_TUNE,
+                        isActive = string == activeString,
+                    ),
+                isLeftSide = string.stringNumber > 3,
+                onRotationChange = {},
+                modifier =
+                    Modifier.graphicsLayer {
+                        translationX = x
+                        translationY = y
+                    }
             )
         }
     }
