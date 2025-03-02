@@ -1,4 +1,4 @@
-package org.samo_lego.katara.viewmodel
+package org.samo_lego.katara.ui.viewmodel
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
