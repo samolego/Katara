@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.R
 import org.samo_lego.katara.ui.components.TuningInfoDisplay
@@ -67,7 +68,9 @@ fun KataraApp(
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                 Box(
-                    modifier = Modifier.weight(3f).fillMaxWidth(),
+                    modifier = Modifier.weight(3f)
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     GuitarComponent(
@@ -79,7 +82,10 @@ fun KataraApp(
 
 
                 Box(
-                    modifier = Modifier.weight(1f).fillMaxWidth()
+                    modifier = Modifier.weight(1f)
+                        .fillMaxWidth()
+                        .padding(4.dp),
+                    contentAlignment = Alignment.CenterEnd
                 ) {
                     if (currentNote != null && isListening) {
                         TuningInfoDisplay(
@@ -125,6 +131,12 @@ private fun TuningWaitingDisplay(modifier: Modifier = Modifier) {
             )
         }
     }
+}
+
+@Preview
+@Composable
+private fun TuningWaitingPreview() {
+    TuningWaitingDisplay()
 }
 
 @Composable
