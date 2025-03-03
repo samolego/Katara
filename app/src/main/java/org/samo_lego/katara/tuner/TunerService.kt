@@ -1,6 +1,5 @@
 package org.samo_lego.katara.tuner
 
-import android.content.Context
 import android.util.Log
 import be.tarsos.dsp.AudioDispatcher
 import be.tarsos.dsp.AudioEvent
@@ -25,7 +24,7 @@ import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-class TunerService(private val context: Context) {
+class TunerService() {
     companion object {
         private const val SAMPLE_RATE = 44100
         private const val BUFFER_SIZE = 2048
@@ -38,6 +37,15 @@ class TunerService(private val context: Context) {
         // Standard reference frequency for A4
         private const val A4_FREQUENCY = 440.0
 
+        // Amplitude threshold below which we consider the audio too soft to detect
+        private const val AMPLITUDE_THRESHOLD = 0.01
+
+        // Number of silent frames before resetting detection
+        private const val SILENCE_RESET_THRESHOLD = 10
+
+        // Maximum frequency difference in Hz to consider a note in the guitar's range
+        private const val MAX_FREQUENCY_DIFFERENCE_PERCENT = 30.0
+
         // Standard guitar string frequencies (for reference)
         private val GUITAR_FREQUENCIES =
                 mapOf(
@@ -48,6 +56,9 @@ class TunerService(private val context: Context) {
                         "B3" to 246.94,
                         "E4" to 329.63
                 )
+        private val STRING_BY_FREQUENCY = InstrumentType.GUITAR_STANDARD.strings.associateBy {
+            GUITAR_FREQUENCIES[it.fullNoteName()] ?: 0.0
+        }
     }
 
     private val _tunerState = MutableStateFlow<TunerState>(TunerState.Inactive)
@@ -62,6 +73,12 @@ class TunerService(private val context: Context) {
     private val _currentNoteData = MutableStateFlow<NoteData?>(null)
     val currentNoteData: StateFlow<NoteData?> = _currentNoteData.asStateFlow()
 
+    // Counter for consecutive silent frames
+    private var silentFrameCount = 0
+
+    // Last detected valid note
+    private var lastValidNote: NoteData? = null
+
     /** Start the tuner service and begin detecting pitches */
     fun start() {
         Log.d(TAG, "Starting tuner")
@@ -72,7 +89,7 @@ class TunerService(private val context: Context) {
             _tunerState.value = TunerState.Starting
 
             // Create a new audio dispatcher
-            dispatcher =
+            val audioDispatcher =
                     AndroidAudioDispatcher.fromDefaultMicrophone(SAMPLE_RATE, BUFFER_SIZE, OVERLAP)
 
             // Create a pitch processor
@@ -81,15 +98,14 @@ class TunerService(private val context: Context) {
 
             // Add the pitch processor to the dispatcher
             Log.d(TAG, "Adding pitch processor to dispatcher")
-            dispatcher?.addAudioProcessor(pitchProcessor)
+            audioDispatcher.addAudioProcessor(pitchProcessor)
 
             // Start the dispatcher in a separate thread
             audioThread = Executors.newSingleThreadExecutor()
-            dispatcher?.let {
-                audioThread?.submit(it)
-                isRunning = true
-                _tunerState.value = TunerState.Active
-            }
+            dispatcher = audioDispatcher
+            audioThread?.submit(audioDispatcher)
+            isRunning = true
+            _tunerState.value = TunerState.Active
         } catch (e: Exception) {
             Log.e(TAG, "Error starting tuner", e)
             _tunerState.value = TunerState.Error(e.message ?: "Unknown error")
@@ -108,6 +124,8 @@ class TunerService(private val context: Context) {
             dispatcher = null
             audioThread = null
             isRunning = false
+            silentFrameCount = 0
+            lastValidNote = null
 
             _tunerState.value = TunerState.Inactive
             _currentNoteData.value = null
@@ -122,11 +140,30 @@ class TunerService(private val context: Context) {
         val pitchHandler =
                 PitchDetectionHandler { result: PitchDetectionResult, event: AudioEvent ->
                     val pitchInHz = result.pitch
+                    val amplitude = event.rms
 
                     // Process the pitch on a background thread
                     serviceScope.launch {
-                        if (pitchInHz > 0 && result.probability > 0.85) {
+                        if (amplitude < AMPLITUDE_THRESHOLD) {
+                            silentFrameCount++
+
+                            if (silentFrameCount >= SILENCE_RESET_THRESHOLD) {
+                                // If we've had enough silent frames, clear the current note
+                                if (_currentNoteData.value != null) {
+                                    _currentNoteData.value = null
+                                }
+                            }
+                        } else if (pitchInHz > 0 && result.probability > 0.85) {
+                            // Reset silent frame count since we have a good signal
+                            silentFrameCount = 0
+
+                            // Process the detected frequency
                             val noteData = processFrequency(pitchInHz)
+
+                            // Store as last valid note
+                            lastValidNote = noteData
+
+                            // Update current note data
                             _currentNoteData.value = noteData
                         }
                     }
@@ -145,8 +182,10 @@ class TunerService(private val context: Context) {
         // Calculate note details from the frequency
         val noteData = calculateNoteData(frequency.toDouble())
 
+        val adjustedNoteData = filterHarmonicConfusion(noteData, frequency.toDouble())
+
         // Find the closest guitar string
-        val closestString = findClosestGuitarString(noteData.noteName, noteData.octave)
+        val closestString = findClosestGuitarStringByFrequency(frequency.toDouble())
 
         // Calculate how far the detected note is from the target (in cents)
         val centsDifference =
@@ -166,12 +205,53 @@ class TunerService(private val context: Context) {
                     else -> TuningDirection.TOO_LOW // Frequency is lower than target
                 }
 
-        return noteData.copy(
+        return adjustedNoteData.copy(
                 closestGuitarString = closestString,
                 centsDifference = centsDifference,
                 tuningDirection = tuningDirection
         )
     }
+
+    /**
+     * Filter out common harmonic confusion cases
+     * This helps prevent E4 from being misidentified as A2, etc.
+     */
+    private fun filterHarmonicConfusion(noteData: NoteData, frequency: Double): NoteData {
+         val fullNote = noteData.fullNoteName
+
+         // Handle octave confusion for D notes
+         if (fullNote == "D4" && frequency < 180.0) {
+             Log.d(TAG, "Correcting octave confusion: D4 -> D3 ($frequency Hz)")
+             return calculateNoteData(146.83) // Use D3 frequency
+         }
+
+         // Handle octave confusion for A notes
+         if (fullNote == "A3" && frequency < 130.0) {
+             Log.d(TAG, "Correcting octave confusion: A3 -> A2 ($frequency Hz)")
+             return calculateNoteData(110.0) // Use A2 frequency
+         }
+
+         // Handle octave confusion for E notes
+         if (fullNote == "E3" && frequency < 100.0) {
+             Log.d(TAG, "Correcting octave confusion: E3 -> E2 ($frequency Hz)")
+             return calculateNoteData(82.41) // Use E2 frequency
+         }
+
+         // Handle E4 detected as A2 (3rd harmonic)
+         if (fullNote == "A2" && frequency > 300.0 && frequency < 340.0) {
+             Log.d(TAG, "Correcting harmonic confusion: A2 -> E4 ($frequency Hz)")
+             return calculateNoteData(329.63) // Use E4 frequency
+         }
+
+         // Handle B3 detected as E2 (3rd harmonic)
+         if (fullNote == "E2" && frequency > 230.0 && frequency < 260.0) {
+             Log.d(TAG, "Correcting harmonic confusion: E2 -> B3 ($frequency Hz)")
+             return calculateNoteData(246.94) // Use B3 frequency
+         }
+
+         return noteData
+     }
+
 
     /** Calculate information about a note from its frequency */
     private fun calculateNoteData(frequency: Double): NoteData {
@@ -201,31 +281,34 @@ class TunerService(private val context: Context) {
         )
     }
 
-    /** Find the closest standard guitar string to the detected note */
-    private fun findClosestGuitarString(noteName: String, octave: Int): InstrumentString? {
-        // First try exact match
-        val fullNoteName = "$noteName$octave"
+    /**
+     * Find closest guitar string by comparing actual frequencies.
+     * This avoids octave confusion issues
+     */
+    private fun findClosestGuitarStringByFrequency(frequency: Double): InstrumentString? {
+        var closestString: InstrumentString? = null
+        var minPercentDifference = Double.MAX_VALUE
 
-        // Get the standard guitar strings
-        val guitarStrings = InstrumentType.GUITAR_STANDARD.strings
+        // Compare to each standard guitar string frequency
+        for ((stringFreq, instrumentString) in STRING_BY_FREQUENCY) {
+            if (stringFreq <= 0.0) continue
 
-        // Look for exact match
-        for (instrumentString in guitarStrings) {
-            if (instrumentString.fullNoteName() == fullNoteName) {
-                return instrumentString
+            // Calculate percentage difference to handle different ranges better
+            val percentDiff = abs((frequency - stringFreq) / stringFreq) * 100.0
+
+            if (percentDiff < minPercentDifference) {
+                minPercentDifference = percentDiff
+                closestString = instrumentString
             }
         }
 
-        // If no exact match, find closest
-        return when (fullNoteName) {
-            // Handle common cases where the note is between standard guitar strings
-            "F2" -> InstrumentType.GUITAR_STANDARD.getStringByNumber(6) // E2
-            "G2", "G#2" -> InstrumentType.GUITAR_STANDARD.getStringByNumber(5) // A2
-            "A#2", "C3" -> InstrumentType.GUITAR_STANDARD.getStringByNumber(4) // D3
-            "D#3", "F3" -> InstrumentType.GUITAR_STANDARD.getStringByNumber(3) // G3
-            "A3" -> InstrumentType.GUITAR_STANDARD.getStringByNumber(2) // B3
-            "C4", "D4" -> InstrumentType.GUITAR_STANDARD.getStringByNumber(1) // E4
-            else -> null // Not close to any standard guitar string
+        // Only accept matches within reasonable percentage difference
+        return if (minPercentDifference <= MAX_FREQUENCY_DIFFERENCE_PERCENT) {
+            Log.d(TAG, "Matched to ${closestString?.fullNoteName()} with $minPercentDifference% difference")
+            closestString
+        } else {
+            Log.d(TAG, "No close match found for ${frequency}Hz (closest: ${closestString?.fullNoteName()} with $minPercentDifference% difference)")
+            null
         }
     }
 

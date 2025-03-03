@@ -20,7 +20,7 @@ import org.samo_lego.katara.util.TuningDirection
 
 class TunerViewModel(application: Application) : AndroidViewModel(application) {
     // Tuner service
-    private val tunerService = TunerService(application)
+    private val tunerService = TunerService()
 
     // UI state for the tuner knobs
     private val _tunerKnobsState = MutableStateFlow(createInitialKnobsState())

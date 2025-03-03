@@ -3,6 +3,7 @@ package org.samo_lego.katara
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,13 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import org.samo_lego.katara.ui.KataraApp
 import org.samo_lego.katara.ui.theme.KataraTheme
-import org.samo_lego.katara.ui.viewmodel.GuitarTunerViewModel
 import org.samo_lego.katara.ui.viewmodel.TunerViewModel
 import org.samo_lego.katara.util.Logger
 
 class MainActivity : ComponentActivity() {
     // Create view models
-    private val guitarViewModel: GuitarTunerViewModel by viewModels()
     private val tunerViewModel: TunerViewModel by viewModels()
 
     // Permission launcher for requesting microphone access
@@ -42,6 +41,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         checkAudioPermission()
 
@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
             KataraTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     KataraApp(
-
+                        tunerViewModel = tunerViewModel,
                     )
                 }
             }
@@ -96,8 +96,8 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-        * Check if we have audio recording permission
-        */
+    * Check if we have audio recording permission
+    */
     private fun hasAudioPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
             this,
