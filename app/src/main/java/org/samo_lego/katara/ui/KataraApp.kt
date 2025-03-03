@@ -45,7 +45,15 @@ fun KataraApp(
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 CenterAlignedTopAppBar(
-                        title = { Text(text = stringResource(R.string.app_name)) },
+                        title = {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(text = stringResource(R.string.app_name))
+                                Text("To my ❤, Rebeka", style = MaterialTheme.typography.bodySmall)
+                            }
+                                },
                         colors =
                                 TopAppBarDefaults.centerAlignedTopAppBarColors(
                                         containerColor = MaterialTheme.colorScheme.primaryContainer,
