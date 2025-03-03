@@ -12,7 +12,7 @@ class AudioInputStream(
 ) : TarsosDSPAudioInputStream {
 
     private var bytesRead = 0L
-    private val TAG = "AudioInputStream"
+    private val tag = "AudioInputStream"
 
     override fun getFormat(): TarsosDSPAudioFormat = format
 
@@ -37,7 +37,7 @@ class AudioInputStream(
 
     override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
         if (audioRecord.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
-            Log.w(TAG, "AudioRecord is not recording")
+            Log.w(tag, "AudioRecord is not recording")
             return -1
         }
 

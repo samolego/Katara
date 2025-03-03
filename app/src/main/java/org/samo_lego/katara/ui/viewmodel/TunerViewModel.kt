@@ -1,7 +1,6 @@
 package org.samo_lego.katara.ui.viewmodel
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,8 +23,6 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
 
     // UI state for the tuner knobs
     private val _tunerKnobsState = MutableStateFlow(createInitialKnobsState())
-    val tunerKnobsState: StateFlow<Map<InstrumentString, TunerState>> =
-            _tunerKnobsState.asStateFlow()
 
     // Currently active string
     private val _activeString = MutableStateFlow<InstrumentString?>(null)
@@ -152,44 +149,6 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
     /** Stop the tuner */
     fun stopTuner() {
         tunerService.stop()
-    }
-
-    /** Toggle the tuner on/off */
-    fun toggleTuner() {
-        Log.d("TunerViewModel", "toggleTuner()")
-        if (_isListening.value) {
-            stopTuner()
-        } else {
-            startTuner()
-        }
-    }
-
-    /** Manually select a string to tune This could be used for a manual tuning mode */
-    fun selectString(string: InstrumentString) {
-        _activeString.value = string
-
-        // Update knob states to show this string as active
-        val updatedKnobsState = _tunerKnobsState.value.toMutableMap()
-
-        InstrumentType.GUITAR_STANDARD.strings.forEach { s ->
-            val currentState =
-                updatedKnobsState[string]
-                    ?: TunerState(
-                        note = string.fullNoteName(),
-                        isActive = false,
-                        tuningDirection = TuningDirection.IN_TUNE
-                    )
-
-            updatedKnobsState[s] =
-                    currentState.copy(
-                            isActive = s == string,
-                            tuningDirection =
-                                    if (s == string) currentState.tuningDirection
-                                    else TuningDirection.IN_TUNE
-                    )
-        }
-
-        _tunerKnobsState.value = updatedKnobsState
     }
 
     /** Create the initial state for all tuner knobs */

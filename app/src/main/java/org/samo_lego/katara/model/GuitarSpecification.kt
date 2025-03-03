@@ -55,6 +55,3 @@ data class GuitarSpecification(
  * @property bottomX X coordinate at the bottom of the string
  */
 data class StringPosition(val startX: Float, val startY: Float, val bottomX: Float)
-
-/** Extension function to get tuner position for a string */
-fun StringPosition.toTunerPosition() = TunerPosition(startX, startY)

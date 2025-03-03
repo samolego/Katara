@@ -30,24 +30,4 @@ enum class InstrumentType(val strings: List<InstrumentString>) {
                     InstrumentString(6, Note.E, 2)
             )
     ),
-    /*BASS_STANDARD(
-            listOf(
-                    InstrumentString(1, Note.G, 2),
-                    InstrumentString(2, Note.D, 2),
-                    InstrumentString(3, Note.A, 1),
-                    InstrumentString(4, Note.E, 1)
-            )
-    ),
-    UKULELE_STANDARD(
-            listOf(
-                    InstrumentString(1, Note.A, 4),
-                    InstrumentString(2, Note.E, 4),
-                    InstrumentString(3, Note.C, 4),
-                    InstrumentString(4, Note.G, 4)
-            )
-    )*/;
-
-    fun getStringByNumber(number: Int): InstrumentString? {
-        return strings.find { it.stringNumber == number }
-    }
 }

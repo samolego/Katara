@@ -11,7 +11,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,18 +50,6 @@ fun TuningInfoDisplay(
         lastTuningAdvice.value = if (stableTuningDirection == TuningDirection.TOO_LOW)
             "Tighten the string" else "Loosen the string"
     }
-
-    // Create a stable tuning advice that doesn't disappear immediately
-    val tuningAdvice = remember(cents, lastTuningAdvice.value) {
-        derivedStateOf {
-            when {
-                abs(cents) < 5.0 -> "Perfect! Hold this tune."
-                abs(cents) < 15.0 -> "Almost in tune! ${lastTuningAdvice.value} slightly."
-                else -> lastTuningAdvice.value
-            }
-        }
-    }
-
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -114,11 +101,6 @@ fun TuningInfoDisplay(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "Cents: ${cents.toInt()}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-
                 // Visual indicator showing how far from in tune
                 TuningMeter(
                     cents = cents,
@@ -128,14 +110,10 @@ fun TuningInfoDisplay(
                         .weight(1f)
                 )
             }
-
-            // Always show tuning advice, with appropriate message based on how close to in-tune
-            /*Text(
-                text = tuningAdvice.value,
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 8.dp)
-            )*/
+            Text(
+                text = "${(cents / 10).toInt()}",
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
@@ -171,7 +149,7 @@ private fun TuningMeter(
 @Composable
 fun TuningInfoDisplayPreview() {
     TuningInfoDisplay(
-        noteName = "",
+        noteName = "A",
         frequency = 440.0,
         cents = 22.0
     )
