@@ -11,12 +11,12 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.samo_lego.katara.tuner.NoteData
 import org.samo_lego.katara.tuner.TunerService
-import org.samo_lego.katara.tuner.TunerState as TunerServiceState
 import org.samo_lego.katara.ui.components.TunerState
 import org.samo_lego.katara.util.InstrumentString
 import org.samo_lego.katara.util.InstrumentType
 import org.samo_lego.katara.util.Logger
 import org.samo_lego.katara.util.TuningDirection
+import org.samo_lego.katara.tuner.TunerState as TunerServiceState
 
 class TunerViewModel(application: Application) : AndroidViewModel(application) {
     // Tuner service
@@ -61,10 +61,15 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
     private fun processNoteData(noteData: NoteData?) {
         _currentNote.value = noteData
 
+        // When no note data is detected (silence), deactivate the active string
+        if (noteData == null && _activeString.value != null) {
+            _activeString.value = null
+            resetAllKnobStates()
+            return
+        }
+
         noteData?.let { note ->
             // Filter out notes that are too soft or uncertain by checking probability
-            // (this logic might already be in your TunerService)
-
             note.closestGuitarString?.let { instrumentString ->
                 // Update active string
                 _activeString.value = instrumentString
@@ -79,6 +84,29 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
                 )
             }
         }
+    }
+
+    /** Reset all knob states to inactive */
+    private fun resetAllKnobStates() {
+        val updatedKnobsState = _tunerKnobsState.value.toMutableMap()
+
+        // Reset all knobs to inactive state
+        InstrumentType.GUITAR_STANDARD.strings.forEach { string ->
+            val currentState = updatedKnobsState[string] ?: TunerState(
+                note = string.fullNoteName(),
+                isActive = false,
+                tuningDirection = TuningDirection.IN_TUNE
+            )
+
+            if (currentState.isActive) {
+                updatedKnobsState[string] = currentState.copy(
+                    isActive = false,
+                    tuningDirection = TuningDirection.IN_TUNE
+                )
+            }
+        }
+
+        _tunerKnobsState.value = updatedKnobsState
     }
 
     /** Update knob states based on detected note */
@@ -145,12 +173,12 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
 
         InstrumentType.GUITAR_STANDARD.strings.forEach { s ->
             val currentState =
-                    updatedKnobsState[s]
-                            ?: TunerState(
-                                    note = s.fullNoteName(),
-                                    isActive = false,
-                                    tuningDirection = TuningDirection.IN_TUNE
-                            )
+                updatedKnobsState[string]
+                    ?: TunerState(
+                        note = string.fullNoteName(),
+                        isActive = false,
+                        tuningDirection = TuningDirection.IN_TUNE
+                    )
 
             updatedKnobsState[s] =
                     currentState.copy(

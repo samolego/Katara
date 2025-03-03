@@ -59,7 +59,7 @@ fun KataraApp(
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                 Box(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    modifier = Modifier.weight(3f).fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
                     GuitarComponent(
@@ -70,24 +70,25 @@ fun KataraApp(
 
 
 
-                if (currentNote != null && isListening) {
-                    TuningInfoDisplay(
-                        noteName = currentNote!!.fullNoteName,
-                        frequency = currentNote!!.frequency,
-                        cents = currentNote!!.centsDifference,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                } else if (isListening) {
-                    // No note detected, but tuner is active
-                    TuningWaitingDisplay(
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                } else {
-                    // Not listening at all - show empty placeholder to maintain layout
-                    EmptyPlaceholder(
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                Box(
+                    modifier = Modifier.weight(1f).fillMaxWidth()
+                ) {
+                    if (currentNote != null && isListening) {
+                        TuningInfoDisplay(
+                            noteName = currentNote!!.fullNoteName,
+                            frequency = currentNote!!.frequency,
+                            cents = currentNote!!.centsDifference,
+                        )
+                    } else if (isListening) {
+                        // No note detected, but tuner is active
+                        TuningWaitingDisplay(
+                        )
+                    } else {
+                        // Not listening at all - show empty placeholder to maintain layout
+                        EmptyPlaceholder()
+                    }
                 }
+
             }
         }
     }
