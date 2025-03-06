@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,7 +33,7 @@ import org.samo_lego.katara.util.TuningDirection
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KataraApp(
-    tunerViewModel: TunerViewModel,
+        tunerViewModel: TunerViewModel,
 ) {
     // Collect states from the tuner view model
     val activeString by tunerViewModel.activeString.collectAsState()
@@ -48,13 +49,13 @@ fun KataraApp(
                 CenterAlignedTopAppBar(
                         title = {
                             Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(text = stringResource(R.string.app_name))
                                 Text("To my ❤, Rebeka", style = MaterialTheme.typography.bodySmall)
                             }
-                                },
+                        },
                         colors =
                                 TopAppBarDefaults.centerAlignedTopAppBarColors(
                                         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -68,41 +69,35 @@ fun KataraApp(
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                 Box(
-                    modifier = Modifier.weight(3f)
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
-                    contentAlignment = Alignment.Center
+                        modifier = Modifier.weight(3f).fillMaxWidth().padding(horizontal = 8.dp),
+                        contentAlignment = Alignment.Center,
                 ) {
                     GuitarComponent(
-                        activeString = activeString,
-                        tuningDirection = tuningDirection,
+                            activeString = activeString,
+                            tuningDirection = tuningDirection,
                     )
                 }
 
-
-
                 Box(
-                    modifier = Modifier.weight(1f)
-                        .fillMaxWidth()
-                        .padding(4.dp),
-                    contentAlignment = Alignment.CenterEnd
+                        modifier = Modifier.weight(1f).fillMaxSize().padding(4.dp),
+                        contentAlignment = Alignment.CenterEnd,
                 ) {
                     if (currentNote != null && isListening) {
                         TuningInfoDisplay(
-                            noteName = currentNote!!.fullNoteName,
-                            frequency = currentNote!!.frequency,
-                            cents = currentNote!!.centsDifference,
+                                noteName = currentNote!!.fullNoteName,
+                                frequency = currentNote!!.frequency,
+                                cents = currentNote!!.centsDifference,
                         )
                     } else if (isListening) {
                         // No note detected, but tuner is active
                         TuningWaitingDisplay(
+                                modifier = Modifier.fillMaxHeight(),
                         )
                     } else {
                         // Not listening at all - show empty placeholder to maintain layout
                         EmptyPlaceholder()
                     }
                 }
-
             }
         }
     }
@@ -110,24 +105,24 @@ fun KataraApp(
 
 @Composable
 private fun TuningWaitingDisplay(modifier: Modifier = Modifier) {
-    Card(modifier = modifier) {
+    Card(
+            modifier = modifier.fillMaxSize().padding(16.dp),
+    ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = "Waiting for sound...",
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center
+                    text = "Waiting for sound ...",
+                    style = MaterialTheme.typography.headlineSmall,
+                    textAlign = TextAlign.Center
             )
             Text(
-                text = "Bend some air by playing a string.",
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 8.dp)
+                    text = "Bend some air by playing a string.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 8.dp)
             )
         }
     }

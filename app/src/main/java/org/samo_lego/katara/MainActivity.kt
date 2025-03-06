@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.samo_lego.katara.ui.KataraApp
 import org.samo_lego.katara.ui.theme.KataraTheme
 import org.samo_lego.katara.ui.viewmodel.TunerViewModel
@@ -23,22 +27,38 @@ class MainActivity : ComponentActivity() {
     private val tunerViewModel: TunerViewModel by viewModels()
 
     // Permission launcher for requesting microphone access
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            // Permission granted, start the tuner
-            Logger.d("Audio recording permission granted")
-            tunerViewModel.startTuner()
-        } else {
-            // Permission denied, inform the user
-            Logger.d("Audio recording permission denied")
-            // You could show a dialog here explaining why the permission is needed
-        }
-    }
+    private val requestPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+                    isGranted: Boolean ->
+                if (isGranted) {
+                    // Permission granted, start the tuner
+                    Logger.d("Audio recording permission granted")
+                    tunerViewModel.startTuner()
+                } else {
+                    // Permission denied, inform the user
+                    Logger.d("Audio recording permission denied")
+                    // You could show a dialog here explaining why the permission is needed
+                }
+            }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        var keepSplashOnScreen = true
+        val splashScreen = installSplashScreen()
+
+        // Set the theme after the splash screen is installed
+        setTheme(R.style.Theme_Katara)
+
+        // Keep the splash screen on until we're ready
+        splashScreen.setKeepOnScreenCondition { keepSplashOnScreen }
+
+        // Launch a coroutine to wait for the animation to complete
+        lifecycleScope.launch {
+            // Wait for the animation to complete (+ a little buffer)
+            delay(1100)
+            keepSplashOnScreen = false
+        }
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -49,7 +69,7 @@ class MainActivity : ComponentActivity() {
             KataraTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     KataraApp(
-                        tunerViewModel = tunerViewModel,
+                            tunerViewModel = tunerViewModel,
                     )
                 }
             }
@@ -70,9 +90,7 @@ class MainActivity : ComponentActivity() {
         tunerViewModel.stopTuner()
     }
 
-    /**
-        * Check if we have audio recording permission and request it if not
-        */
+    /** Check if we have audio recording permission and request it if not */
     private fun checkAudioPermission() {
         when {
             // Permission already granted
@@ -95,13 +113,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-    * Check if we have audio recording permission
-    */
+    /** Check if we have audio recording permission */
     private fun hasAudioPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.RECORD_AUDIO
-        ) == PackageManager.PERMISSION_GRANTED
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) ==
+                PackageManager.PERMISSION_GRANTED
     }
 }

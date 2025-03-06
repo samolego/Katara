@@ -65,6 +65,7 @@ android {
 
 dependencies {
     implementation(libs.tarsos.core)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.wear)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.androidx.core.ktx)

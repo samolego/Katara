@@ -1,5 +1,24 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-    <style name="Theme.Katara" parent="android:Theme.Material.Light.NoActionBar" />
+<?xml version="1.0" encoding="utf-8" ?>
+<resources
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+>
+    <!-- Base application theme -->
+    <style
+        name="Theme.Katara"
+        parent="android:Theme.Material.Light.NoActionBar"
+    />
+    <!-- Splash screen theme -->
+    <style name="Theme.Katara.SplashScreen" parent="Theme.SplashScreen">
+        <item
+            name="windowSplashScreenBackground"
+        >@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <item name="postSplashScreenTheme">@style/Theme.Katara</item>
+        <item
+            name="android:windowSplashScreenBehavior"
+            tools:targetApi="33"
+        >icon_preferred</item>
+    </style>
 </resources>
