@@ -15,19 +15,28 @@ enum class Note(val noteName: String) {
     G_SHARP("G#")
 }
 
-data class InstrumentString(val stringNumber: Int, val note: Note, val octave: Int) {
-    fun fullNoteName(): String = "${note.noteName}$octave"
+data class InstrumentString(val stringNumber: Int, val noteFreq: NoteFrequency) {
+    fun fullNoteName(): String = "${noteFreq.name}$"
 }
 
 enum class InstrumentType(val strings: List<InstrumentString>) {
     GUITAR_STANDARD(
             listOf(
-                    InstrumentString(1, Note.E, 4),
-                    InstrumentString(2, Note.B, 3),
-                    InstrumentString(3, Note.G, 3),
-                    InstrumentString(4, Note.D, 3),
-                    InstrumentString(5, Note.A, 2),
-                    InstrumentString(6, Note.E, 2)
+                    InstrumentString(1, NoteFrequency.E4),
+                    InstrumentString(2, NoteFrequency.B3),
+                    InstrumentString(3, NoteFrequency.G3),
+                    InstrumentString(4, NoteFrequency.D3),
+                    InstrumentString(5, NoteFrequency.A2),
+                    InstrumentString(6, NoteFrequency.E2),
             )
     ),
+}
+
+enum class NoteFrequency(note: Note, frequency: Double) {
+    E4(Note.E, 329.63),
+    B3(Note.B, 246.94),
+    G3(Note.G, 196.0),
+    D3(Note.D, 146.83),
+    A2(Note.A, 110.0),
+    E2(Note.E, 82.41),
 }

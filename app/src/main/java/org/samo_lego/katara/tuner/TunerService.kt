@@ -46,18 +46,8 @@ class TunerService() {
         // Maximum frequency difference in Hz to consider a note in the guitar's range
         private const val MAX_FREQUENCY_DIFFERENCE_PERCENT = 30.0
 
-        // Standard guitar string frequencies (for reference)
-        private val GUITAR_FREQUENCIES =
-                mapOf(
-                        "E2" to 82.41,
-                        "A2" to 110.0,
-                        "D3" to 146.83,
-                        "G3" to 196.0,
-                        "B3" to 246.94,
-                        "E4" to 329.63
-                )
         private val STRING_BY_FREQUENCY = InstrumentType.GUITAR_STANDARD.strings.associateBy {
-            GUITAR_FREQUENCIES[it.fullNoteName()] ?: 0.0
+            it.noteFreq.frequency
         }
     }
 
@@ -190,7 +180,7 @@ class TunerService() {
         // Calculate how far the detected note is from the target (in cents)
         val centsDifference =
                 if (closestString != null) {
-                    val targetFreq = GUITAR_FREQUENCIES[closestString.fullNoteName()] ?: 0.0
+                    val targetFreq = closestString.noteFreq.frequency
                     calculateCentsDifference(frequency.toDouble(), targetFreq)
                 } else {
                     0.0
