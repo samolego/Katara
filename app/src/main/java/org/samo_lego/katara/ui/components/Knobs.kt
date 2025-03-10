@@ -1,18 +1,15 @@
 package org.samo_lego.katara.ui.components
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,7 +32,6 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.ui.theme.TuneOk
 import org.samo_lego.katara.ui.theme.TuneTooHigh
@@ -48,6 +44,27 @@ data class TunerState(
     val isActive: Boolean = false,
     val tuningDirection: TuningDirection = TuningDirection.IN_TUNE
 )
+
+/**
+ * Animation specifications for tuner knob animations
+ */
+private object KnobAnimations {
+    // Consistent animation specs for different animation types
+    val slowRotationSpec: AnimationSpec<Float> = tween(
+        durationMillis = 2000,
+        easing = FastOutSlowInEasing
+    )
+
+    val quickAdjustmentSpec: AnimationSpec<Float> = spring(
+        dampingRatio = Spring.DampingRatioMediumBouncy,
+        stiffness = 150f
+    )
+
+    val bounceSpec: AnimationSpec<Float> = spring(
+        dampingRatio = 0.7f,
+        stiffness = 150f
+    )
+}
 
 @Composable
 fun GuitarTunerKnob(
@@ -73,13 +90,14 @@ fun GuitarTunerKnob(
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
-            modifier =
-                Modifier.align(
-                    if (isLeftSide) Alignment.CenterEnd
-                    else Alignment.CenterStart
+            modifier = Modifier
+                .align(if (isLeftSide) Alignment.CenterEnd else Alignment.CenterStart)
+                .offset(
+                    x = if (isLeftSide) (-48).dp else 48.dp,
+                    y = 0.dp
                 )
-                    .offset(x = if (isLeftSide) (-48).dp else 48.dp)
         )
+
     }
 }
 
@@ -93,105 +111,63 @@ private fun TunerKnob(
     modifier: Modifier = Modifier
 ) {
     // Animation values
-    val scaleXYAnim = remember { Animatable(1f) }
+    val scaleAnim = remember { Animatable(1f) }
     val elevationAnim = remember { Animatable(4f) }
     val rotationXAnim = remember { Animatable(0f) }
     val rotationYAnim = remember { Animatable(-15f) }
 
-    // Remember previous state
-    var previousTuningDirection by remember { mutableStateOf(tuningDirection) }
-    var previousActive by remember { mutableStateOf(isActive) }
+    // Remember previous state to detect changes
+    var previousState by remember {
+        mutableStateOf(Triple(isActive, tuningDirection, false))
+    }
 
-    // Use consistent animation specs to ensure uniform animation speeds
-    val slowRotationSpec: AnimationSpec<Float> = tween(durationMillis = 2000, easing = FastOutSlowInEasing)
-    val quickAdjustmentSpec: AnimationSpec<Float> = spring(stiffness = 150f)
-    val bounceSpec: AnimationSpec<Float> = spring(
-        dampingRatio = 0.7f,
-        stiffness = 150f
-    )
-
-    // When activation state changes, trigger animation
+    // Use a single LaunchedEffect to handle all animation logic
     LaunchedEffect(isActive, tuningDirection) {
-        // First handle the case when a knob becomes active
-        if (isActive && !previousActive) {
-            when (tuningDirection) {
-                TuningDirection.TOO_LOW -> {
-                    // Reset rotation first if needed
-                    if (rotationXAnim.value != 0f) {
-                        rotationXAnim.snapTo(0f)
-                    }
-                    rotationYAnim.animateTo(-20f, animationSpec = quickAdjustmentSpec)
-                    rotationXAnim.animateTo(targetValue = 360f, animationSpec = slowRotationSpec)
-                    rotationYAnim.animateTo(-15f, animationSpec = quickAdjustmentSpec)
-                }
-                TuningDirection.TOO_HIGH -> {
-                    // Reset rotation first if needed
-                    if (rotationXAnim.value != 0f) {
-                        rotationXAnim.snapTo(0f)
-                    }
-                    rotationYAnim.animateTo(-10f, animationSpec = quickAdjustmentSpec)
-                    rotationXAnim.animateTo(targetValue = -360f, animationSpec = slowRotationSpec)
-                    rotationYAnim.animateTo(-15f, animationSpec = quickAdjustmentSpec)
-                }
-                TuningDirection.IN_TUNE -> {
-                    scaleXYAnim.animateTo(targetValue = 0.9f, animationSpec = quickAdjustmentSpec)
-                    scaleXYAnim.animateTo(targetValue = 1f, animationSpec = bounceSpec)
-                    scaleXYAnim.animateTo(1f, animationSpec = bounceSpec)
-                }
+        val (wasActive, prevDirection, _) = previousState
+        val stateChanged = wasActive != isActive || prevDirection != tuningDirection
+
+        if (!stateChanged) return@LaunchedEffect
+
+        // Handle animation based on state changes
+        when {
+            // Case 1: Became active
+            isActive && !wasActive -> {
+                animateForTuningDirection(
+                    tuningDirection,
+                    rotationXAnim,
+                    rotationYAnim,
+                    scaleAnim
+                )
+            }
+
+            // Case 2: Already active but tuning direction changed
+            isActive -> {
+                // Reset X rotation for a clean start
+                rotationXAnim.snapTo(0f)
+                animateForTuningDirection(
+                    tuningDirection,
+                    rotationXAnim,
+                    rotationYAnim,
+                    scaleAnim
+                )
+            }
+
+            // Case 3: Became inactive
+            !isActive && wasActive -> {
+                resetAnimations(rotationXAnim, rotationYAnim, scaleAnim, elevationAnim)
             }
         }
-        // Handle the case when tuning direction changes while already active
-        else if (isActive && tuningDirection != previousTuningDirection) {
-            // Reset X rotation to start fresh
-            rotationXAnim.snapTo(0f)
 
-            when (tuningDirection) {
-                TuningDirection.TOO_LOW -> {
-                    rotationYAnim.animateTo(-20f, animationSpec = quickAdjustmentSpec)
-                    rotationXAnim.animateTo(targetValue = 360f, animationSpec = slowRotationSpec)
-                    rotationYAnim.animateTo(-15f, animationSpec = quickAdjustmentSpec)
-                }
-                TuningDirection.TOO_HIGH -> {
-                    rotationYAnim.animateTo(-10f, animationSpec = quickAdjustmentSpec)
-                    rotationXAnim.animateTo(targetValue = -360f, animationSpec = slowRotationSpec)
-                    rotationYAnim.animateTo(-15f, animationSpec = quickAdjustmentSpec)
-                }
-                TuningDirection.IN_TUNE -> {
-                    scaleXYAnim.animateTo(targetValue = 0.9f, animationSpec = quickAdjustmentSpec)
-                    scaleXYAnim.animateTo(targetValue = 1f, animationSpec = bounceSpec)
-                    scaleXYAnim.animateTo(1f, animationSpec = bounceSpec)
-                    rotationXAnim.animateTo(targetValue = 0f, animationSpec = quickAdjustmentSpec)
-                }
-            }
-        }
-        // Handle inactive state
-        else if (!isActive && previousActive) {
-            rotationXAnim.animateTo(targetValue = 0f, animationSpec = quickAdjustmentSpec)
-            scaleXYAnim.animateTo(targetValue = 1f, animationSpec = quickAdjustmentSpec)
-            elevationAnim.animateTo(4f, animationSpec = quickAdjustmentSpec)
-        }
-
-        // Update previous states
-        previousActive = isActive
-        previousTuningDirection = tuningDirection
+        // Update previous state
+        previousState = Triple(isActive, tuningDirection, true)
     }
 
     // Determine knob colors based on active state and tuning direction
-    val color =
-        if (isActive) {
-            when (tuningDirection) {
-                TuningDirection.IN_TUNE -> TuneOk
-                TuningDirection.TOO_LOW -> TuneTooLow
-                TuningDirection.TOO_HIGH -> TuneTooHigh
-            }
-        } else {
-            MaterialTheme.colorScheme.surfaceVariant
-        }
+    val color = determineKnobColor(isActive, tuningDirection)
 
     val topColor = color.lighten(0.1f)
     val middleColor = color
     val bottomColor = color.darken(0.1f)
-
     val shadowEdgeColor = color.darken(0.2f)
 
     Box(modifier = Modifier.padding(4.dp).graphicsLayer(clip = false)) {
@@ -200,10 +176,13 @@ private fun TunerKnob(
                 modifier.size(32.dp)
                     .shadow(elevationAnim.value.dp)
                     .graphicsLayer {
-                        scaleX = scaleXYAnim.value
+                        scaleX = scaleAnim.value
                         rotationX = rotationXAnim.value
                         rotationY = rotationYAnim.value
-                        transformOrigin = TransformOrigin(if (isLeftSide) 1.1f else -0.1f, 0.5f)
+                        transformOrigin = TransformOrigin(
+                            if (isLeftSide) 1.1f else -0.1f,
+                            0.5f
+                        )
                     }
                     .pointerInput(Unit) {
                         detectDragGestures { change, dragAmount ->
@@ -215,7 +194,7 @@ private fun TunerKnob(
             color = Color.Transparent
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
-                // Draw a stronger gradient from top to bottom for clear directionality
+                // Draw gradient background
                 drawRect(
                     brush = Brush.verticalGradient(
                         colors = listOf(topColor, middleColor, bottomColor),
@@ -224,7 +203,7 @@ private fun TunerKnob(
                     )
                 )
 
-                // Add a subtle center line
+                // Center indicator line
                 drawLine(
                     color = color.lighten(0.1f),
                     start = Offset(size.width * 0.2f, size.height * 0.5f),
@@ -232,7 +211,7 @@ private fun TunerKnob(
                     strokeWidth = size.height * 0.06f
                 )
 
-                // Right edge shadow (appears further)
+                // Edge shadow for depth
                 drawRect(
                     brush = Brush.verticalGradient(
                         colors = listOf(Color.Transparent, shadowEdgeColor),
@@ -242,6 +221,64 @@ private fun TunerKnob(
                 )
             }
         }
+    }
+}
+
+/**
+ * Animate based on tuning direction
+ */
+private suspend fun animateForTuningDirection(
+    tuningDirection: TuningDirection,
+    rotationXAnim: Animatable<Float, *>,
+    rotationYAnim: Animatable<Float, *>,
+    scaleAnim: Animatable<Float, *>
+) {
+    when (tuningDirection) {
+        TuningDirection.TOO_LOW -> {
+            rotationYAnim.animateTo(-20f, animationSpec = KnobAnimations.quickAdjustmentSpec)
+            rotationXAnim.animateTo(360f, animationSpec = KnobAnimations.slowRotationSpec)
+            rotationYAnim.animateTo(-15f, animationSpec = KnobAnimations.quickAdjustmentSpec)
+        }
+        TuningDirection.TOO_HIGH -> {
+            rotationYAnim.animateTo(-10f, animationSpec = KnobAnimations.quickAdjustmentSpec)
+            rotationXAnim.animateTo(-360f, animationSpec = KnobAnimations.slowRotationSpec)
+            rotationYAnim.animateTo(-15f, animationSpec = KnobAnimations.quickAdjustmentSpec)
+        }
+        TuningDirection.IN_TUNE -> {
+            scaleAnim.animateTo(0.9f, animationSpec = KnobAnimations.quickAdjustmentSpec)
+            scaleAnim.animateTo(1f, animationSpec = KnobAnimations.bounceSpec)
+        }
+    }
+}
+
+/**
+ * Reset all animations to default values
+ */
+private suspend fun resetAnimations(
+    rotationXAnim: Animatable<Float, *>,
+    rotationYAnim: Animatable<Float, *>,
+    scaleAnim: Animatable<Float, *>,
+    elevationAnim: Animatable<Float, *>
+) {
+    rotationXAnim.animateTo(0f, animationSpec = KnobAnimations.quickAdjustmentSpec)
+    rotationYAnim.animateTo(-15f, animationSpec = KnobAnimations.quickAdjustmentSpec)
+    scaleAnim.animateTo(1f, animationSpec = KnobAnimations.quickAdjustmentSpec)
+    elevationAnim.animateTo(4f, animationSpec = KnobAnimations.quickAdjustmentSpec)
+}
+
+/**
+ * Determine knob color based on state and tuning direction
+ */
+@Composable
+private fun determineKnobColor(isActive: Boolean, tuningDirection: TuningDirection): Color {
+    return if (isActive) {
+        when (tuningDirection) {
+            TuningDirection.IN_TUNE -> TuneOk
+            TuningDirection.TOO_LOW -> TuneTooLow
+            TuningDirection.TOO_HIGH -> TuneTooHigh
+        }
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
     }
 }
 
@@ -260,53 +297,4 @@ private fun Color.darken(amount: Float): Color {
         green = (green - amount).coerceAtLeast(0f),
         blue = (blue - amount).coerceAtLeast(0f)
     )
-}
-
-@Preview
-@Composable
-fun TunerKnobsPreview() {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(16.dp)) {
-        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            GuitarTunerKnob(
-                isLeftSide = true,
-                tuner =
-                    TunerState(
-                        note = "E2",
-                        isActive = true,
-                        tuningDirection = TuningDirection.TOO_LOW
-                    ),
-                onRotationChange = {},
-            )
-
-            GuitarTunerKnob(
-                isLeftSide = false,
-                tuner =
-                    TunerState(
-                        note = "A2",
-                        isActive = true,
-                        tuningDirection = TuningDirection.TOO_HIGH
-                    ),
-                onRotationChange = {},
-            )
-        }
-
-        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            GuitarTunerKnob(
-                isLeftSide = true,
-                tuner =
-                    TunerState(
-                        note = "D3",
-                        isActive = true,
-                        tuningDirection = TuningDirection.IN_TUNE
-                    ),
-                onRotationChange = {},
-            )
-
-            GuitarTunerKnob(
-                isLeftSide = false,
-                tuner = TunerState(note = "G3", isActive = false),
-                onRotationChange = {},
-            )
-        }
-    }
 }

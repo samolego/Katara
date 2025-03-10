@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-
 android {
     namespace = "org.samo_lego.katara"
     compileSdk = 35
@@ -16,15 +15,13 @@ android {
         applicationId = "org.samo_lego.katara"
         minSdk = 31
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = project.property("version_code")?.toString()?.toInt() ?: 1
+        versionName = project.property("version_name")?.toString() ?: "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    lint {
-        baseline = file("lint-baseline.xml")
-    }
+    lint { baseline = file("lint-baseline.xml") }
 
     signingConfigs {
         create("release") {
