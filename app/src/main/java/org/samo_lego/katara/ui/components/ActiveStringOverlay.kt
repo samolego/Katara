@@ -10,53 +10,65 @@ import org.samo_lego.katara.model.GuitarSpecification
 import org.samo_lego.katara.ui.theme.StringHighlight
 import org.samo_lego.katara.util.NoteFrequency
 
+/** Renders a highlight overlay for the active string */
 @Composable
 fun ActiveStringOverlay(
-    activeString: NoteFrequency,
-    spec: GuitarSpecification,
-    modifier: Modifier = Modifier
+        activeString: NoteFrequency,
+        spec: GuitarSpecification,
+        modifier: Modifier = Modifier
 ) {
     Canvas(modifier = modifier.fillMaxSize()) {
-        val canvasWidth = size.width
-        val canvasHeight = size.height
-
-        val scaleX = canvasWidth / spec.viewportWidth
-        val scaleY = canvasHeight / spec.viewportHeight
-        val scale = minOf(scaleX, scaleY)
-
-        val offsetX = (canvasWidth - (spec.viewportWidth * scale)) / 2f
-        val offsetY = (canvasHeight - (spec.viewportHeight * scale)) / 2f
-
+        // Calculate scaling factors
+        val scalingInfo = calculateCanvasScaling(size.width, size.height, spec)
         val stringPosition = spec.stringPositions[activeString] ?: return@Canvas
 
-        val scaledMainStart = Offset(
-            stringPosition.startX * scale + offsetX,
-            stringPosition.startY * scale + offsetY
-        )
-        val scaledMainEnd = Offset(
-            stringPosition.bottomX * scale + offsetX,
-            spec.bottomStringY * scale + offsetY
-        )
+        // Calculate scaled positions
+        val scaledStart = scalePosition(stringPosition.startX, stringPosition.startY, scalingInfo)
 
-        val scaledBottomEnd = Offset(
-            stringPosition.bottomX * scale + offsetX,
-            spec.viewportHeight * scale + offsetY
-        )
+        val scaledMiddle = scalePosition(stringPosition.bottomX, spec.bottomStringY, scalingInfo)
 
+        val scaledEnd = scalePosition(stringPosition.bottomX, spec.viewportHeight, scalingInfo)
+
+        // Draw the main string segment
         drawLine(
-            color = StringHighlight,
-            start = scaledMainStart,
-            end = scaledMainEnd,
-            strokeWidth = 3.5f * scale,
-            cap = StrokeCap.Round
+                color = StringHighlight,
+                start = scaledStart,
+                end = scaledMiddle,
+                strokeWidth = 3.5f * scalingInfo.scale,
+                cap = StrokeCap.Round
         )
 
+        // Draw the bottom segment
         drawLine(
-            color = StringHighlight,
-            start = scaledMainEnd,
-            end = scaledBottomEnd,
-            strokeWidth = 3.5f * scale,
-            cap = StrokeCap.Round
+                color = StringHighlight,
+                start = scaledMiddle,
+                end = scaledEnd,
+                strokeWidth = 3.5f * scalingInfo.scale,
+                cap = StrokeCap.Round
         )
     }
+}
+
+/** Scaling information for the canvas */
+private data class CanvasScalingInfo(val scale: Float, val offsetX: Float, val offsetY: Float)
+
+/** Calculate scaling information for the canvas */
+private fun calculateCanvasScaling(
+        canvasWidth: Float,
+        canvasHeight: Float,
+        spec: GuitarSpecification
+): CanvasScalingInfo {
+    val scaleX = canvasWidth / spec.viewportWidth
+    val scaleY = canvasHeight / spec.viewportHeight
+    val scale = minOf(scaleX, scaleY)
+
+    val offsetX = (canvasWidth - (spec.viewportWidth * scale)) / 2f
+    val offsetY = (canvasHeight - (spec.viewportHeight * scale)) / 2f
+
+    return CanvasScalingInfo(scale, offsetX, offsetY)
+}
+
+/** Scale a position from SVG coordinates to canvas coordinates */
+private fun scalePosition(x: Float, y: Float, scaling: CanvasScalingInfo): Offset {
+    return Offset(x = x * scaling.scale + scaling.offsetX, y = y * scaling.scale + scaling.offsetY)
 }
