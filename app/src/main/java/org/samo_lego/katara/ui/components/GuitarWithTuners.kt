@@ -49,7 +49,7 @@ fun GuitarWithTuners(
         ) {
             // Base guitar image
             Image(
-                    painter = painterResource(id = R.drawable.guitar_standard),
+                    painter = painterResource(id = R.drawable.instrument_guitar),
                     contentDescription = "Guitar Headstock",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Fit
