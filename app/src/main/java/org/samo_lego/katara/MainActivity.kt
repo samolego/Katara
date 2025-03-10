@@ -3,6 +3,7 @@ package org.samo_lego.katara
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,11 +21,11 @@ import kotlinx.coroutines.launch
 import org.samo_lego.katara.ui.KataraApp
 import org.samo_lego.katara.ui.theme.KataraTheme
 import org.samo_lego.katara.ui.viewmodel.TunerViewModel
-import org.samo_lego.katara.util.Logger
 
 class MainActivity : ComponentActivity() {
-    // Create view models
+    // Create view model
     private val tunerViewModel: TunerViewModel by viewModels()
+    private val loggerTag = "MainActivity"
 
     // Permission launcher for requesting microphone access
     private val requestPermissionLauncher =
@@ -32,35 +33,20 @@ class MainActivity : ComponentActivity() {
                     isGranted: Boolean ->
                 if (isGranted) {
                     // Permission granted, start the tuner
-                    Logger.d("Audio recording permission granted")
+                    Log.d(loggerTag, "Audio recording permission granted")
                     tunerViewModel.startTuner()
                 } else {
                     // Permission denied, inform the user
-                    Logger.d("Audio recording permission denied")
+                    Log.d(loggerTag, "Audio recording permission denied")
                     // You could show a dialog here explaining why the permission is needed
                 }
             }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        var keepSplashOnScreen = true
-        val splashScreen = installSplashScreen()
-
-        // Set the theme after the splash screen is installed
-        setTheme(R.style.Theme_Katara)
-
-        // Keep the splash screen on until we're ready
-        splashScreen.setKeepOnScreenCondition { keepSplashOnScreen }
-
-        // Launch a coroutine to wait for the animation to complete
-        lifecycleScope.launch {
-            // Wait for the animation to complete (+ a little buffer)
-            delay(1100)
-            keepSplashOnScreen = false
-        }
+        setupSplashScreen()
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
-
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         checkAudioPermission()
@@ -68,11 +54,23 @@ class MainActivity : ComponentActivity() {
         setContent {
             KataraTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    KataraApp(
-                            tunerViewModel = tunerViewModel,
-                    )
+                    KataraApp(tunerViewModel = tunerViewModel)
                 }
             }
+        }
+    }
+
+    private fun setupSplashScreen() {
+        var keepSplashOnScreen = true
+        installSplashScreen().apply { setKeepOnScreenCondition { keepSplashOnScreen } }
+
+        // Set the theme after the splash screen is installed
+        setTheme(R.style.Theme_Katara)
+
+        // Launch a coroutine to dismiss splash screen after delay
+        lifecycleScope.launch {
+            delay(1100) // Wait for animation + buffer
+            keepSplashOnScreen = false
         }
     }
 
@@ -95,19 +93,19 @@ class MainActivity : ComponentActivity() {
         when {
             // Permission already granted
             hasAudioPermission() -> {
-                Logger.d("Audio recording permission already granted")
+                Log.d(loggerTag, "Audio recording permission already granted")
                 tunerViewModel.startTuner()
             }
             // Show rationale - explain why we need this permission
             shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) -> {
-                Logger.d("Should show permission rationale")
+                Log.d(loggerTag, "Should show permission rationale")
                 // You could show a dialog here explaining why the permission is needed
                 // and then request permission
                 requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
             }
             // Request permission directly
             else -> {
-                Logger.d("Requesting audio recording permission")
+                Log.d(loggerTag, "Requesting audio recording permission")
                 requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
             }
         }

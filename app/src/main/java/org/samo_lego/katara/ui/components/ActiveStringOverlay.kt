@@ -8,11 +8,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import org.samo_lego.katara.model.GuitarSpecification
 import org.samo_lego.katara.ui.theme.StringHighlight
-import org.samo_lego.katara.util.InstrumentString
+import org.samo_lego.katara.util.NoteFrequency
 
 @Composable
 fun ActiveStringOverlay(
-    activeString: InstrumentString,
+    activeString: NoteFrequency,
     spec: GuitarSpecification,
     modifier: Modifier = Modifier
 ) {

@@ -10,13 +10,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.samo_lego.katara.ui.components.GuitarWithTuners
-import org.samo_lego.katara.util.InstrumentString
+import org.samo_lego.katara.util.NoteFrequency
 import org.samo_lego.katara.util.TuningDirection
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GuitarComponent(
-    activeString: InstrumentString?,
+    activeString: NoteFrequency?,
     tuningDirection: TuningDirection,
     modifier: Modifier = Modifier
 ) {

@@ -1,51 +1,59 @@
 package org.samo_lego.katara.ui.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.samo_lego.katara.tuner.NoteData
 import org.samo_lego.katara.tuner.TunerService
-import org.samo_lego.katara.ui.components.TunerState
-import org.samo_lego.katara.util.InstrumentString
-import org.samo_lego.katara.util.InstrumentType
-import org.samo_lego.katara.util.Logger
-import org.samo_lego.katara.util.TuningDirection
 import org.samo_lego.katara.tuner.TunerState as TunerServiceState
+import org.samo_lego.katara.ui.components.TunerState
+import org.samo_lego.katara.util.InstrumentType
+import org.samo_lego.katara.util.NoteFrequency
+import org.samo_lego.katara.util.TuningDirection
 
+/** ViewModel for the tuner screen */
 class TunerViewModel(application: Application) : AndroidViewModel(application) {
-    // Tuner service
+    private val tag = "TunerViewModel"
+
+    // Consolidated UI state
+    data class UiState(
+            val isListening: Boolean = false,
+            val activeString: NoteFrequency? = null,
+            val currentNote: NoteData? = null,
+            val tunerKnobsState: Map<NoteFrequency, TunerState> = emptyMap(),
+            val errorMessage: String? = null
+    )
+
+    private val _uiState = MutableStateFlow(UiState(tunerKnobsState = createInitialKnobsState()))
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
+    // Derived flows for backward compatibility
+    val isListening: StateFlow<Boolean> =
+            uiState.map { it.isListening }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    val activeString: StateFlow<NoteFrequency?> =
+            uiState.map { it.activeString }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    val currentNote: StateFlow<NoteData?> =
+            uiState.map { it.currentNote }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    // Service
     private val tunerService = TunerService()
-
-    // UI state for the tuner knobs
-    private val _tunerKnobsState = MutableStateFlow(createInitialKnobsState())
-
-    // Currently active string
-    private val _activeString = MutableStateFlow<InstrumentString?>(null)
-    val activeString: StateFlow<InstrumentString?> = _activeString.asStateFlow()
-
-    // Note being detected
-    private val _currentNote = MutableStateFlow<NoteData?>(null)
-    val currentNote: StateFlow<NoteData?> = _currentNote.asStateFlow()
-
-    // Tuner service state
-    private val _isListening = MutableStateFlow(false)
-    val isListening: StateFlow<Boolean> = _isListening.asStateFlow()
 
     init {
         // Observe tuner service state
         viewModelScope.launch {
-            tunerService.tunerState.collectLatest { state ->
-                _isListening.value = state == TunerServiceState.Active
-
-                if (state is TunerServiceState.Error) {
-                    Logger.e("Tuner error: ${state.message}")
-                }
-            }
+            tunerService.tunerState.collectLatest { state -> updateTunerState(state) }
         }
 
         // Observe note data from the tuner service
@@ -54,91 +62,97 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /** Update UI state based on tuner service state */
+    private fun updateTunerState(state: TunerServiceState) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                    isListening = state == TunerServiceState.Active,
+                    errorMessage = if (state is TunerServiceState.Error) state.message else null
+            )
+        }
+
+        // Log errors
+        if (state is TunerServiceState.Error) {
+            Log.e("$tag#updateTunerState", "Tuner error: ${state.message}")
+        }
+    }
+
     /** Process detected note data and update UI state */
     private fun processNoteData(noteData: NoteData?) {
-        _currentNote.value = noteData
-
-        // When no note data is detected (silence), deactivate the active string
-        if (noteData == null && _activeString.value != null) {
-            _activeString.value = null
-            resetAllKnobStates()
+        if (noteData == null) {
+            _uiState.update { currentState ->
+                currentState.copy(
+                        activeString = null,
+                        currentNote = null,
+                        tunerKnobsState = resetAllKnobStates(currentState.tunerKnobsState)
+                )
+            }
             return
         }
 
-        noteData?.let { note ->
-            // Filter out notes that are too soft or uncertain by checking probability
-            note.closestGuitarString?.let { instrumentString ->
-                // Update active string
-                _activeString.value = instrumentString
-
-                // Update knob states for all strings
-                updateKnobsForDetectedNote(instrumentString, note.tuningDirection)
-
-                // Log the detection
-                Logger.d(
-                        "Detected ${note.fullNoteName} (${note.frequency}Hz), closest to ${instrumentString.fullNoteName()}, " +
-                                "cents off: ${note.centsDifference.toInt()}, direction: ${note.tuningDirection}"
+        // Update with detected note if we have a matching string
+        noteData.closestGuitarString?.let { detectedString ->
+            _uiState.update { currentState ->
+                currentState.copy(
+                        activeString = detectedString,
+                        currentNote = noteData,
+                        tunerKnobsState =
+                                updateKnobsForDetectedNote(
+                                        currentState.tunerKnobsState,
+                                        detectedString,
+                                        noteData.tuningDirection
+                                )
                 )
             }
+
+            // Log the detection
+            Log.d(
+                    "$tag#processNoteData",
+                    "Detected ${noteData.fullNoteName} (${noteData.frequency}Hz), " +
+                            "closest to ${detectedString.fullNoteName}, " +
+                            "cents off: ${noteData.centsDifference.toInt()}, " +
+                            "direction: ${noteData.tuningDirection}"
+            )
         }
     }
 
     /** Reset all knob states to inactive */
-    private fun resetAllKnobStates() {
-        val updatedKnobsState = _tunerKnobsState.value.toMutableMap()
-
-        // Reset all knobs to inactive state
-        InstrumentType.GUITAR_STANDARD.strings.forEach { string ->
-            val currentState = updatedKnobsState[string] ?: TunerState(
-                note = string.fullNoteName(),
-                isActive = false,
-                tuningDirection = TuningDirection.IN_TUNE
-            )
-
-            if (currentState.isActive) {
-                updatedKnobsState[string] = currentState.copy(
-                    isActive = false,
-                    tuningDirection = TuningDirection.IN_TUNE
-                )
-            }
+    private fun resetAllKnobStates(
+            currentKnobsState: Map<NoteFrequency, TunerState>
+    ): Map<NoteFrequency, TunerState> {
+        return currentKnobsState.mapValues { (_, state) ->
+            state.copy(isActive = false, tuningDirection = TuningDirection.IN_TUNE)
         }
-
-        _tunerKnobsState.value = updatedKnobsState
     }
 
     /** Update knob states based on detected note */
     private fun updateKnobsForDetectedNote(
-            activeString: InstrumentString,
+            currentKnobsState: Map<NoteFrequency, TunerState>,
+            activeString: NoteFrequency,
             tuningDirection: TuningDirection
-    ) {
-        val updatedKnobsState = _tunerKnobsState.value.toMutableMap()
-
-        // Update all knobs
-        InstrumentType.GUITAR_STANDARD.strings.forEach { string ->
+    ): Map<NoteFrequency, TunerState> {
+        return currentKnobsState.mapValues { (string, state) ->
             val isActive = string == activeString
-            val currentState =
-                    updatedKnobsState[string]
-                            ?: TunerState(
-                                    note = string.fullNoteName(),
-                                    isActive = false,
-                                    tuningDirection = TuningDirection.IN_TUNE
-                            )
-
-            // Only update if state changed (to avoid unnecessary recompositions)
-            if (currentState.isActive != isActive ||
-                            (isActive && currentState.tuningDirection != tuningDirection)
-            ) {
-
-                updatedKnobsState[string] =
-                        currentState.copy(
-                                isActive = isActive,
-                                tuningDirection =
-                                        if (isActive) tuningDirection else TuningDirection.IN_TUNE
-                        )
+            if (isActive || state.isActive) {
+                state.copy(
+                        isActive = isActive,
+                        tuningDirection = if (isActive) tuningDirection else TuningDirection.IN_TUNE
+                )
+            } else {
+                state // No change needed
             }
         }
+    }
 
-        _tunerKnobsState.value = updatedKnobsState
+    /** Create the initial state for all tuner knobs */
+    private fun createInitialKnobsState(): Map<NoteFrequency, TunerState> {
+        return InstrumentType.GUITAR_STANDARD.notes.associateWith { note ->
+            TunerState(
+                    note = note.fullNoteName,
+                    isActive = false,
+                    tuningDirection = TuningDirection.IN_TUNE
+            )
+        }
     }
 
     /** Start the tuner */
@@ -149,17 +163,6 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
     /** Stop the tuner */
     fun stopTuner() {
         tunerService.stop()
-    }
-
-    /** Create the initial state for all tuner knobs */
-    private fun createInitialKnobsState(): Map<InstrumentString, TunerState> {
-        return InstrumentType.GUITAR_STANDARD.strings.associateWith { string ->
-            TunerState(
-                    note = string.fullNoteName(),
-                    isActive = false,
-                    tuningDirection = TuningDirection.IN_TUNE
-            )
-        }
     }
 
     override fun onCleared() {

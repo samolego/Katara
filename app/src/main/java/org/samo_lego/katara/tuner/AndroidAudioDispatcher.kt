@@ -15,33 +15,27 @@ object AndroidAudioDispatcher {
             bufferSize: Int,
             bufferOverlap: Int
     ): AudioDispatcher {
-        // Configure AudioRecord
-        val audioFormat = AudioFormat.ENCODING_PCM_FLOAT
+        // Audio format configuration
+        val audioFormat = AudioFormat.ENCODING_PCM_16BIT
         val channelConfig = AudioFormat.CHANNEL_IN_MONO
 
-        // Calculate minimum buffer size required
+        // Calculate buffer size (use at least the minimum required size)
         val minBufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
+        val recordBufferSize = maxOf(bufferSize, minBufferSize)
 
-        // Use larger buffer to avoid underruns
-        val recordBufferSize = if (bufferSize < minBufferSize) minBufferSize else bufferSize
-
-        // Create the AudioRecord instance
+        // Create and start recording
         val audioRecord =
                 AudioRecord(
-                        MediaRecorder.AudioSource.MIC,
-                        sampleRate,
-                        channelConfig,
-                        audioFormat,
-                        recordBufferSize * 2 // Double buffer for safety
-                )
+                                MediaRecorder.AudioSource.MIC,
+                                sampleRate,
+                                channelConfig,
+                                audioFormat,
+                                recordBufferSize
+                        )
+                        .apply { startRecording() }
 
-        // Start recording
-        audioRecord.startRecording()
-
-        // Create TarsosDSP compatible format
+        // Create TarsosDSP format (16-bit, mono, little-endian)
         val tarsosDSPFormat = TarsosDSPAudioFormat(sampleRate.toFloat(), 16, 1, true, false)
-
-        // Create input stream wrapper
         val audioStream = AudioInputStream(audioRecord, tarsosDSPFormat)
 
         // Create and return the dispatcher

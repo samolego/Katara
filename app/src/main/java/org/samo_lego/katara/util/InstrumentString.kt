@@ -1,5 +1,8 @@
 package org.samo_lego.katara.util
 
+import kotlin.math.abs
+import org.samo_lego.katara.tuner.NoteData
+
 enum class Note(val noteName: String) {
     A("A"),
     A_SHARP("A#"),
@@ -12,31 +15,129 @@ enum class Note(val noteName: String) {
     F("F"),
     F_SHARP("F#"),
     G("G"),
-    G_SHARP("G#")
+    G_SHARP("G#");
+
+    companion object {
+        private val values = entries.toTypedArray()
+
+        // Get note by index (0-11)
+        fun fromIndex(index: Int): Note = values[index % 12]
+
+        // Get notes array in order for calculations
+        fun getOrderedNotes(): Array<Note> =
+                arrayOf(C, C_SHARP, D, D_SHARP, E, F, F_SHARP, G, G_SHARP, A, A_SHARP, B)
+    }
 }
 
-data class InstrumentString(val stringNumber: Int, val noteFreq: NoteFrequency) {
-    fun fullNoteName(): String = "${noteFreq.name}$"
+enum class NoteFrequency(val note: Note, val frequency: Double, val octave: Int) {
+    E4(Note.E, 329.63, 4),
+    B3(Note.B, 246.94, 3),
+    G3(Note.G, 196.0, 3),
+    D3(Note.D, 146.83, 3),
+    A2(Note.A, 110.0, 2),
+    E2(Note.E, 82.41, 2);
+
+    val fullNoteName: String
+        get() = "${note.noteName}$octave"
 }
 
-enum class InstrumentType(val strings: List<InstrumentString>) {
+enum class InstrumentType(val notes: Array<NoteFrequency>) {
     GUITAR_STANDARD(
-            listOf(
-                    InstrumentString(1, NoteFrequency.E4),
-                    InstrumentString(2, NoteFrequency.B3),
-                    InstrumentString(3, NoteFrequency.G3),
-                    InstrumentString(4, NoteFrequency.D3),
-                    InstrumentString(5, NoteFrequency.A2),
-                    InstrumentString(6, NoteFrequency.E2),
+            arrayOf(
+                    NoteFrequency.E4,
+                    NoteFrequency.B3,
+                    NoteFrequency.G3,
+                    NoteFrequency.D3,
+                    NoteFrequency.A2,
+                    NoteFrequency.E2
             )
-    ),
+    );
+
+    /** Find the closest string to the given frequency */
+    fun findClosestString(frequency: Double, maxPercentDifference: Double = 30.0): NoteFrequency? {
+        var closestNote: NoteFrequency? = null
+        var minPercentDifference = Double.MAX_VALUE
+
+        for (note in notes) {
+            val noteFreq = note.frequency
+            val percentDiff = abs((frequency - noteFreq) / noteFreq) * 100.0
+
+            if (percentDiff < minPercentDifference) {
+                minPercentDifference = percentDiff
+                closestNote = note
+            }
+        }
+
+        return if (minPercentDifference <= maxPercentDifference) closestNote else null
+    }
+
+    /** Get string number (1-indexed) for a note frequency in this instrument */
+    fun getStringNumber(noteFreq: NoteFrequency): Int {
+        return notes.indexOf(noteFreq) + 1
+    }
 }
 
-enum class NoteFrequency(note: Note, frequency: Double) {
-    E4(Note.E, 329.63),
-    B3(Note.B, 246.94),
-    G3(Note.G, 196.0),
-    D3(Note.D, 146.83),
-    A2(Note.A, 110.0),
-    E2(Note.E, 82.41),
+/** Helper object for correcting harmonic confusion in pitch detection */
+object HarmonicCorrections {
+    // Sealed classes for correction types
+    sealed class Correction {
+        abstract fun appliesTo(note: Note, octave: Int, frequency: Double): Boolean
+        abstract val targetNoteFreq: NoteFrequency
+    }
+
+    class HarmonicCorrection(
+            val note: Note,
+            val octave: Int,
+            val thresholdFreq: Double,
+            override val targetNoteFreq: NoteFrequency
+    ) : Correction() {
+        override fun appliesTo(note: Note, octave: Int, frequency: Double): Boolean {
+            return this.note == note && this.octave == octave && frequency < thresholdFreq
+        }
+    }
+
+    class RangeCorrection(
+            val note: Note,
+            val octave: Int,
+            val minFreq: Double,
+            val maxFreq: Double,
+            override val targetNoteFreq: NoteFrequency
+    ) : Correction() {
+        override fun appliesTo(note: Note, octave: Int, frequency: Double): Boolean {
+            return this.note == note &&
+                    this.octave == octave &&
+                    frequency > minFreq &&
+                    frequency < maxFreq
+        }
+    }
+
+    // Common harmonic confusion cases
+    private val corrections =
+            listOf(
+                    HarmonicCorrection(Note.D, 4, 180.0, NoteFrequency.D3),
+                    HarmonicCorrection(Note.A, 3, 130.0, NoteFrequency.A2),
+                    HarmonicCorrection(Note.E, 3, 100.0, NoteFrequency.E2),
+                    RangeCorrection(Note.A, 2, 300.0, 340.0, NoteFrequency.E4),
+                    RangeCorrection(Note.E, 2, 230.0, 260.0, NoteFrequency.B3)
+            )
+
+    /** Correct common harmonic confusion issues */
+    fun correctHarmonicConfusion(noteData: NoteData, frequency: Double): NoteData {
+        val noteObj = Note.values().find { it.noteName == noteData.noteName }
+
+        // If we can't match the note, just return the original data
+        noteObj?.let { note ->
+            // Find applicable correction
+            for (correction in corrections) {
+                if (correction.appliesTo(note, noteData.octave, frequency)) {
+                    return noteData.copy(
+                            noteName = correction.targetNoteFreq.note.noteName,
+                            octave = correction.targetNoteFreq.octave
+                    )
+                }
+            }
+        }
+
+        return noteData
+    }
 }
