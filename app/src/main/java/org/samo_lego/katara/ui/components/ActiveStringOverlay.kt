@@ -20,7 +20,7 @@ fun ActiveStringOverlay(
     Canvas(modifier = modifier.fillMaxSize()) {
         // Calculate scaling factors
         val scalingInfo = calculateCanvasScaling(size.width, size.height, spec)
-        val stringPosition = spec.stringPositions[activeString] ?: return@Canvas
+        val stringPosition = spec.stringDataMap[activeString]?.stringPosition ?: return@Canvas
 
         // Calculate scaled positions
         val scaledStart = scalePosition(stringPosition.startX, stringPosition.startY, scalingInfo)

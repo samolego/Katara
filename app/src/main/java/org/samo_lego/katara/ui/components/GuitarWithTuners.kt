@@ -65,16 +65,13 @@ fun GuitarWithTuners(
             }
 
             // Tuners overlay
-            layoutSpec.stringDataMap[activeString]?.knobOffset?.let {
-                TunersLayout(
-                    activeString = activeString,
-                    tuningDirection = tuningDirection,
-                    spec = layoutSpec,
-                    isLeftSide = (it < 0),
-                    scalingInfo = scalingInfo,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            TunersLayout(
+                activeString = activeString,
+                tuningDirection = tuningDirection,
+                spec = layoutSpec,
+                scalingInfo = scalingInfo,
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }
@@ -99,7 +96,6 @@ private fun TunersLayout(
     activeString: NoteFrequency?,
     tuningDirection: TuningDirection,
     spec: InstrumentLayoutSpecification,
-    isLeftSide: Boolean,
     scalingInfo: ScalingInfo,
     modifier: Modifier = Modifier
 ) {
@@ -113,7 +109,7 @@ private fun TunersLayout(
                     noteFreq = noteFreq,
                     position = stringData.stringPosition,
                     tunerRadius = tunerRadius,
-                    isLeftSide = isLeftSide,
+                    isLeftSide = stringData.knobOffset < 0.0f,
                     xOffset = stringData.knobOffset,
                     scalingInfo = scalingInfo,
                     isActive = noteFreq == activeString,

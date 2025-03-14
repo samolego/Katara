@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.samo_lego.katara.model.InstrumentLayoutSpecification
 import org.samo_lego.katara.tuner.NoteData
 import org.samo_lego.katara.tuner.TunerService
 import org.samo_lego.katara.tuner.TunerState as TunerServiceState
@@ -28,24 +29,15 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
     // Consolidated UI state
     data class UiState(
             val isListening: Boolean = false,
+            val chosenInstrument: InstrumentLayoutSpecification = InstrumentLayoutSpecification.GUITAR_STANDARD,
             val activeString: NoteFrequency? = null,
             val currentNote: NoteData? = null,
             val tunerKnobsState: Map<NoteFrequency, TunerState> = emptyMap(),
-            val errorMessage: String? = null
+            val errorMessage: String? = null,
     )
 
     private val _uiState = MutableStateFlow(UiState(tunerKnobsState = createInitialKnobsState()))
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
-
-    // Derived flows for backward compatibility
-    val isListening: StateFlow<Boolean> =
-            uiState.map { it.isListening }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
-
-    val activeString: StateFlow<NoteFrequency?> =
-            uiState.map { it.activeString }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
-
-    val currentNote: StateFlow<NoteData?> =
-            uiState.map { it.currentNote }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     // Service
     private val tunerService = TunerService()
@@ -74,6 +66,13 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
         // Log errors
         if (state is TunerServiceState.Error) {
             Log.e("$tag#updateTunerState", "Tuner error: ${state.message}")
+        }
+    }
+
+    /** Update the chosen instrument */
+    fun updateChosenInstrument(instrument: InstrumentLayoutSpecification) {
+        _uiState.update { currentState ->
+            currentState.copy(chosenInstrument = instrument)
         }
     }
 

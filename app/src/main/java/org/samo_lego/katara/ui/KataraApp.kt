@@ -1,5 +1,6 @@
 package org.samo_lego.katara.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -7,9 +8,13 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -18,14 +23,16 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.R
-import org.samo_lego.katara.model.InstrumentLayoutSpecification
 import org.samo_lego.katara.ui.components.GuitarWithTuners
+import org.samo_lego.katara.ui.components.InstrumentChooseDialog
 import org.samo_lego.katara.ui.components.TuningInfoDisplay
 import org.samo_lego.katara.ui.viewmodel.TunerViewModel
 import org.samo_lego.katara.util.TuningDirection
@@ -39,12 +46,20 @@ fun KataraApp(tunerViewModel: TunerViewModel) {
     val currentNote = uiState.currentNote
     val isListening = uiState.isListening
 
+    var showInstrumentChooseDialog = remember { mutableStateOf(false) }
+
     // Calculate tuning direction and value from detected note
     val tuningDirection = currentNote?.tuningDirection ?: TuningDirection.IN_TUNE
 
     Scaffold(
             modifier = Modifier.fillMaxSize(),
-            topBar = { AppTopBar() },
+            topBar = {
+                AppTopBar(
+                    openInstrumentChooseDialog = {
+                        showInstrumentChooseDialog.value = true
+                    }
+                )
+            },
             contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -55,12 +70,11 @@ fun KataraApp(tunerViewModel: TunerViewModel) {
             ) {
                 // Guitar visualization (top 3/4)
                 GuitarWithTuners(
-                    activeString = activeString,
-                    tuningDirection = tuningDirection,
-                    layoutSpec = InstrumentLayoutSpecification.GUITAR_STANDARD,
-                    modifier =  Modifier.weight(3f).fillMaxSize().aspectRatio(0.5f),
+                        activeString = activeString,
+                        tuningDirection = tuningDirection,
+                        layoutSpec = uiState.chosenInstrument,
+                        modifier = Modifier.weight(3f).fillMaxSize().aspectRatio(0.5f),
                 )
-
 
                 // Tuning info display (bottom 1/4)
                 when {
@@ -80,13 +94,26 @@ fun KataraApp(tunerViewModel: TunerViewModel) {
                     }
                 }
             }
+            if (showInstrumentChooseDialog.value) {
+                InstrumentChooseDialog(
+                    currentInstrument = uiState.chosenInstrument,
+                    onInstrumentSelected = {
+                        tunerViewModel.updateChosenInstrument(it)
+                    },
+                    onDismiss = {
+                        showInstrumentChooseDialog.value = false
+                    }
+                )
+            }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AppTopBar() {
+private fun AppTopBar(
+    openInstrumentChooseDialog: () -> Unit = {}
+) {
     CenterAlignedTopAppBar(
             title = {
                 Column(
@@ -101,7 +128,19 @@ private fun AppTopBar() {
                     TopAppBarDefaults.centerAlignedTopAppBarColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                             titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+            actions = {
+                IconButton(
+                    onClick = {
+                        openInstrumentChooseDialog()
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "More"
                     )
+                }
+            }
     )
 }
 
