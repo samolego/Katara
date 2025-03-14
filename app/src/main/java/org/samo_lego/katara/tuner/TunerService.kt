@@ -33,7 +33,6 @@ class TunerService {
         private const val TAG = "TunerService"
 
         private const val TUNING_TOLERANCE = 10.0
-        private const val A4_FREQUENCY = 440.0
         private const val AMPLITUDE_THRESHOLD = 0.01
         private const val SILENCE_RESET_THRESHOLD = 10
     }
@@ -192,7 +191,7 @@ class TunerService {
 
     /** Calculate information about a note from its frequency */
     private fun calculateNoteData(frequency: Double): NoteData {
-        val semitoneFromA4 = 12 * log2(frequency / A4_FREQUENCY)
+        val semitoneFromA4 = 12 * log2(frequency / NoteFrequency.A4.frequency)
         val midiNote = (69 + semitoneFromA4).roundToInt()
 
         // Get note and octave from MIDI note
@@ -201,7 +200,7 @@ class TunerService {
         val octave = (midiNote / 12) - 1
 
         // Calculate exact frequency for this note
-        val exactFrequency = A4_FREQUENCY * 2.0.pow((midiNote - 69) / 12.0)
+        val exactFrequency = NoteFrequency.A4.frequency * 2.0.pow((midiNote - 69) / 12.0)
 
         // Calculate cents off from the exact note frequency
         val cents = 1200 * log2(frequency / exactFrequency)
