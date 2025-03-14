@@ -3,6 +3,7 @@ package org.samo_lego.katara.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -23,6 +24,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.R
+import org.samo_lego.katara.model.InstrumentLayoutSpecification
+import org.samo_lego.katara.ui.components.GuitarWithTuners
 import org.samo_lego.katara.ui.components.TuningInfoDisplay
 import org.samo_lego.katara.ui.viewmodel.TunerViewModel
 import org.samo_lego.katara.util.TuningDirection
@@ -51,11 +54,13 @@ fun KataraApp(tunerViewModel: TunerViewModel) {
                             Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 8.dp)
             ) {
                 // Guitar visualization (top 3/4)
-                GuitarComponent(
-                        activeString = activeString,
-                        tuningDirection = tuningDirection,
-                        modifier = Modifier.weight(3f).fillMaxWidth()
+                GuitarWithTuners(
+                    activeString = activeString,
+                    tuningDirection = tuningDirection,
+                    layoutSpec = InstrumentLayoutSpecification.GUITAR_STANDARD,
+                    modifier =  Modifier.weight(3f).fillMaxSize().aspectRatio(0.5f),
                 )
+
 
                 // Tuning info display (bottom 1/4)
                 when {

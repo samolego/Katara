@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import org.samo_lego.katara.model.InstrumentLayoutSpecification
 import org.samo_lego.katara.ui.components.GuitarWithTuners
 import org.samo_lego.katara.util.NoteFrequency
 import org.samo_lego.katara.util.TuningDirection
@@ -18,6 +19,7 @@ fun GuitarComponent(
     GuitarWithTuners(
             activeString = activeString,
             tuningDirection = tuningDirection,
-            modifier = modifier.fillMaxSize().aspectRatio(0.5f)
+            layoutSpec = InstrumentLayoutSpecification.UKULELE_STANDARD,
+            modifier = modifier.fillMaxSize().aspectRatio(0.5f),
     )
 }

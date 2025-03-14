@@ -6,16 +6,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
-import org.samo_lego.katara.model.GuitarSpecification
+import org.samo_lego.katara.model.InstrumentLayoutSpecification
 import org.samo_lego.katara.ui.theme.StringHighlight
 import org.samo_lego.katara.util.NoteFrequency
 
 /** Renders a highlight overlay for the active string */
 @Composable
 fun ActiveStringOverlay(
-        activeString: NoteFrequency,
-        spec: GuitarSpecification,
-        modifier: Modifier = Modifier
+    activeString: NoteFrequency,
+    spec: InstrumentLayoutSpecification,
+    modifier: Modifier = Modifier
 ) {
     Canvas(modifier = modifier.fillMaxSize()) {
         // Calculate scaling factors
@@ -56,7 +56,7 @@ private data class CanvasScalingInfo(val scale: Float, val offsetX: Float, val o
 private fun calculateCanvasScaling(
         canvasWidth: Float,
         canvasHeight: Float,
-        spec: GuitarSpecification
+        spec: InstrumentLayoutSpecification
 ): CanvasScalingInfo {
     val scaleX = canvasWidth / spec.viewportWidth
     val scaleY = canvasHeight / spec.viewportHeight

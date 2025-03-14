@@ -2,6 +2,7 @@ package org.samo_lego.katara.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -13,10 +14,10 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import org.samo_lego.katara.R
-import org.samo_lego.katara.model.GuitarSpecification
+import org.samo_lego.katara.model.InstrumentLayoutSpecification
 import org.samo_lego.katara.model.StringPosition
 import org.samo_lego.katara.util.InstrumentType
 import org.samo_lego.katara.util.NoteFrequency
@@ -27,17 +28,17 @@ private data class ScalingInfo(val scale: Float, val offsetX: Float, val offsetY
 
 @Composable
 fun GuitarWithTuners(
-        activeString: NoteFrequency?,
-        tuningDirection: TuningDirection,
-        modifier: Modifier = Modifier,
-        spec: GuitarSpecification = GuitarSpecification.STANDARD_6_STRING,
-        imageSize: Float = 0.7f
+    activeString: NoteFrequency?,
+    tuningDirection: TuningDirection,
+    modifier: Modifier = Modifier,
+    layoutSpec: InstrumentLayoutSpecification,
+    imageSize: Float = 0.7f
 ) {
     // Track the component size to calculate scaling
     val size = remember { mutableStateOf(IntSize.Zero) }
 
     // Calculate scaling info when size changes
-    val scalingInfo = remember(size.value) { calculateScaling(size.value, spec) }
+    val scalingInfo = remember(size.value) { calculateScaling(size.value, layoutSpec) }
 
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         // Container for the guitar and tuners
@@ -49,7 +50,7 @@ fun GuitarWithTuners(
         ) {
             // Base guitar image
             Image(
-                    painter = painterResource(id = R.drawable.instrument_guitar),
+                    painter = painterResource(id = layoutSpec.drawableId),
                     contentDescription = "Guitar Headstock",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Fit
@@ -59,7 +60,7 @@ fun GuitarWithTuners(
             if (activeString != null) {
                 ActiveStringOverlay(
                         activeString = activeString,
-                        spec = spec,
+                        spec = layoutSpec,
                         modifier = Modifier.fillMaxSize()
                 )
             }
@@ -68,7 +69,7 @@ fun GuitarWithTuners(
             TunersLayout(
                     activeString = activeString,
                     tuningDirection = tuningDirection,
-                    spec = spec,
+                    spec = layoutSpec,
                     getStringNumber = { InstrumentType.GUITAR_STANDARD.getStringNumber(it) },
                     scalingInfo = scalingInfo,
                     modifier = Modifier.fillMaxSize()
@@ -78,7 +79,7 @@ fun GuitarWithTuners(
 }
 
 /** Calculate scaling information based on component size and specification */
-private fun calculateScaling(size: IntSize, spec: GuitarSpecification): ScalingInfo {
+private fun calculateScaling(size: IntSize, spec: InstrumentLayoutSpecification): ScalingInfo {
     val width = size.width.toFloat()
     val height = size.height.toFloat()
 
@@ -94,12 +95,12 @@ private fun calculateScaling(size: IntSize, spec: GuitarSpecification): ScalingI
 
 @Composable
 private fun TunersLayout(
-        activeString: NoteFrequency?,
-        tuningDirection: TuningDirection,
-        spec: GuitarSpecification,
-        getStringNumber: (NoteFrequency) -> Int,
-        scalingInfo: ScalingInfo,
-        modifier: Modifier = Modifier
+    activeString: NoteFrequency?,
+    tuningDirection: TuningDirection,
+    spec: InstrumentLayoutSpecification,
+    getStringNumber: (NoteFrequency) -> Int,
+    scalingInfo: ScalingInfo,
+    modifier: Modifier = Modifier
 ) {
     // Size of the tuner knob in SVG coordinates
     val tunerRadius = 12f
@@ -158,5 +159,26 @@ private fun TunerKnobForString(
                         translationX = x
                         translationY = y
                     }
+    )
+}
+
+@Preview
+@Composable
+fun GuitarPreview() {
+    GuitarWithTuners(
+        activeString = NoteFrequency.G3,
+        tuningDirection = TuningDirection.TOO_HIGH,
+        layoutSpec = InstrumentLayoutSpecification.GUITAR_STANDARD,
+        modifier = Modifier.fillMaxSize().aspectRatio(0.5f),
+    )
+}
+
+@Preview
+@Composable
+fun UkulelePreview() {
+    GuitarWithTuners(
+        activeString = NoteFrequency.G4,
+        tuningDirection = TuningDirection.TOO_HIGH,
+        layoutSpec = InstrumentLayoutSpecification.UKULELE_STANDARD,
     )
 }
