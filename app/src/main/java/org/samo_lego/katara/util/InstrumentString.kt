@@ -54,14 +54,6 @@ enum class InstrumentNotes(val notes: Array<NoteFrequency>) {
                     NoteFrequency.A2,
                     NoteFrequency.E2
             )
-    ),
-    UKULELE_NOTES(
-            arrayOf(
-                    NoteFrequency.A4,
-                    NoteFrequency.E4,
-                    NoteFrequency.C4,
-                    NoteFrequency.G4,
-            )
     );
 
     /** Find the closest string to the given frequency */

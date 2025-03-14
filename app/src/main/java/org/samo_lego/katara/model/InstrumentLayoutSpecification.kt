@@ -1,85 +1,82 @@
 package org.samo_lego.katara.model
 
 import org.samo_lego.katara.R
-import org.samo_lego.katara.util.InstrumentNotes
 import org.samo_lego.katara.util.NoteFrequency
 
 /** Represents specifications for a guitar type, including string and tuner positions. */
 data class InstrumentLayoutSpecification(
-        val instrumentNotes: InstrumentNotes,
         val viewportWidth: Float,
         val viewportHeight: Float,
-        val stringPositions: Map<NoteFrequency, StringPosition>,
         val bottomStringY: Float,
-        val knobsXOffsets: Map<NoteFrequency, Float>,
+        val stringDataMap: Map<NoteFrequency, StringData>,
         val drawableId: Int,
 
         ) {
     companion object {
-        val GUITAR_STANDARD =
-                InstrumentLayoutSpecification(
-                        instrumentNotes = InstrumentNotes.GUITAR_NOTES,
-                        viewportWidth = 153f,
-                        viewportHeight = 326f,
-                        bottomStringY = 297f,
-                        knobsXOffsets =
-                                mapOf(
-                                        InstrumentNotes.GUITAR_NOTES.notes[3] to -50f,
-                                        InstrumentNotes.GUITAR_NOTES.notes[4] to -50f,
-                                        InstrumentNotes.GUITAR_NOTES.notes[5] to -50f,
-                                        InstrumentNotes.GUITAR_NOTES.notes[2] to 50f,
-                                        InstrumentNotes.GUITAR_NOTES.notes[1] to 50f,
-                                        InstrumentNotes.GUITAR_NOTES.notes[0] to 50f,
-                                ),
-                        stringPositions =
-                                mapOf(
-                                        // Left side (low to high)
-                                        InstrumentNotes.GUITAR_NOTES.notes[3] to
-                                                StringPosition(36f, 63f, 69f),
-                                        InstrumentNotes.GUITAR_NOTES.notes[4] to
-                                                StringPosition(36f, 143f, 57f),
-                                        InstrumentNotes.GUITAR_NOTES.notes[5] to
-                                                StringPosition(36f, 223f, 47f),
-                                        // Right side (low to high)
-                                        InstrumentNotes.GUITAR_NOTES.notes[2] to
-                                                StringPosition(116f, 63f, 83f),
-                                        InstrumentNotes.GUITAR_NOTES.notes[1] to
-                                                StringPosition(116f, 143f, 94f),
-                                        InstrumentNotes.GUITAR_NOTES.notes[0] to
-                                                StringPosition(116f, 223f, 104f),
-                                ),
-                        drawableId = R.drawable.instrument_guitar,
-                )
-        val UKULELE_STANDARD =
-                InstrumentLayoutSpecification(
-                        instrumentNotes = InstrumentNotes.UKULELE_NOTES,
-                        viewportWidth = 116f,
-                        viewportHeight = 208f,
-                        bottomStringY = 180f,
-                        knobsXOffsets =
-                                mapOf(
-                                        InstrumentNotes.UKULELE_NOTES.notes[2] to -40f,
-                                        InstrumentNotes.UKULELE_NOTES.notes[3] to -40f,
-                                        InstrumentNotes.UKULELE_NOTES.notes[1] to 40f,
-                                        InstrumentNotes.UKULELE_NOTES.notes[0] to 40f,
-                                ),
-                        stringPositions =
-                                mapOf(
-                                        // Left side (low to high)
-                                        InstrumentNotes.UKULELE_NOTES.notes[2] to
-                                                StringPosition(28f, 61f, 48f),
-                                        InstrumentNotes.UKULELE_NOTES.notes[3] to
-                                                StringPosition(28f, 133f, 22f),
-                                        // Right side (low to high)
-                                        InstrumentNotes.UKULELE_NOTES.notes[1] to
-                                                StringPosition(89f, 61f, 70f),
-                                        InstrumentNotes.UKULELE_NOTES.notes[0] to
-                                                StringPosition(89f, 133f, 92f),
-                                ),
-                        drawableId = R.drawable.instrument_ukulele,
-                )
+            lateinit var GUITAR_STANDARD: InstrumentLayoutSpecification
+            lateinit var UKULELE_STANDARD: InstrumentLayoutSpecification
+            init {
+                    {
+                        // Guitar
+                        val knobOffset = 50f
+                        val leftStartX = 36f
+                        val rightStartX = 116f
+
+                            val topY = 63f
+                            val middleY = 143f
+                            val bottomY = 223f
+
+                            val stringDataMap = mapOf(
+                                    NoteFrequency.D3 to StringData(4, -knobOffset, StringPosition(leftStartX, topY, 69f)),
+                                    NoteFrequency.A2 to StringData(5, -knobOffset, StringPosition(leftStartX, middleY, 57f)),
+                                    NoteFrequency.E2 to StringData(6, -knobOffset, StringPosition(leftStartX, bottomY, 47f)),
+                                    NoteFrequency.G3 to StringData(3, knobOffset, StringPosition(rightStartX, topY, 83f)),
+                                    NoteFrequency.B3 to StringData(2, knobOffset, StringPosition(rightStartX, middleY, 94f)),
+                                    NoteFrequency.E4 to StringData(1, knobOffset, StringPosition(rightStartX, bottomY, 104f)),
+                            )
+                            GUITAR_STANDARD = InstrumentLayoutSpecification(
+                                    viewportWidth = 153f,
+                                    viewportHeight = 326f,
+                                    bottomStringY = 297f,
+                                    stringDataMap = stringDataMap,
+                                    drawableId = R.drawable.instrument_guitar,
+                            )
+                    }
+
+                    {
+                            // Ukulele
+                            val knobOffset = 40f
+                            val leftStartX = 28f
+                            val rightStartX = 89f
+
+                            val topY = 61f
+                            val bottomY = 133f
+
+                            val stringDataMap = mapOf(
+                                    NoteFrequency.C4 to StringData(3, -knobOffset, StringPosition(leftStartX, topY, 48f)),
+                                    NoteFrequency.G4 to StringData(4, -knobOffset, StringPosition(leftStartX, bottomY, 22f)),
+                                    NoteFrequency.E4 to StringData(2, knobOffset, StringPosition(rightStartX, topY, 70f)),
+                                    NoteFrequency.A4 to StringData(1, knobOffset, StringPosition(rightStartX, bottomY, 92f)),
+                            )
+
+                            UKULELE_STANDARD = InstrumentLayoutSpecification(
+                                    viewportWidth = 116f,
+                                    viewportHeight = 208f,
+                                    bottomStringY = 180f,
+                                    stringDataMap = stringDataMap,
+                                    drawableId = R.drawable.instrument_ukulele,
+                            )
+                    }
+            }
     }
 }
+
+/**
+ * Represents the data for the instrument string.
+ * Negative knob offsets are the ones to be drawn on the left side,
+ * as note name and knob position will swap places.
+ */
+data class StringData(val index: Int, val knobOffset: Float, val stringPosition: StringPosition)
 
 /**
  * Represents the position of a guitar string.

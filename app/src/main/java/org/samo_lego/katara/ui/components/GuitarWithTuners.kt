@@ -65,14 +65,16 @@ fun GuitarWithTuners(
             }
 
             // Tuners overlay
-            TunersLayout(
+            layoutSpec.stringDataMap[activeString]?.knobOffset?.let {
+                TunersLayout(
                     activeString = activeString,
                     tuningDirection = tuningDirection,
                     spec = layoutSpec,
-                    getStringNumber = { layoutSpec.instrumentNotes.getStringNumber(it) },
+                    isLeftSide = (it < 0),
                     scalingInfo = scalingInfo,
                     modifier = Modifier.fillMaxSize()
-            )
+                )
+            }
         }
     }
 }
@@ -97,7 +99,7 @@ private fun TunersLayout(
     activeString: NoteFrequency?,
     tuningDirection: TuningDirection,
     spec: InstrumentLayoutSpecification,
-    getStringNumber: (NoteFrequency) -> Int,
+    isLeftSide: Boolean,
     scalingInfo: ScalingInfo,
     modifier: Modifier = Modifier
 ) {
@@ -106,13 +108,13 @@ private fun TunersLayout(
 
     Box(modifier = modifier) {
         // Display each tuner knob
-        spec.stringPositions.forEach { (noteFreq, position) ->
+        spec.stringDataMap.forEach { (noteFreq, stringData) ->
             TunerKnobForString(
                     noteFreq = noteFreq,
-                    position = position,
+                    position = stringData.stringPosition,
                     tunerRadius = tunerRadius,
-                    getStringNumber = getStringNumber,
-                    xOffset = spec.knobsXOffsets[noteFreq] ?: 0f,
+                    isLeftSide = isLeftSide,
+                    xOffset = stringData.knobOffset,
                     scalingInfo = scalingInfo,
                     isActive = noteFreq == activeString,
                     tuningDirection =
@@ -129,7 +131,7 @@ private fun TunerKnobForString(
         noteFreq: NoteFrequency,
         position: StringPosition,
         tunerRadius: Float,
-        getStringNumber: (NoteFrequency) -> Int,
+        isLeftSide: Boolean,
         xOffset: Float,
         scalingInfo: ScalingInfo,
         isActive: Boolean,
@@ -139,9 +141,6 @@ private fun TunerKnobForString(
     val (scale, offsetX, offsetY) = scalingInfo
     val x = (position.startX - tunerRadius + xOffset) * scale + offsetX
     val y = (position.startY - tunerRadius) * scale + offsetY
-
-    // Determine if this is a left-side knob based on string number
-    val isLeftSide = getStringNumber(noteFreq) > 3
 
     // Create and position the tuner knob
     GuitarTunerKnob(
