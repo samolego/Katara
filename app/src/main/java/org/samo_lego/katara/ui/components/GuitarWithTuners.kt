@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.model.InstrumentLayoutSpecification
 import org.samo_lego.katara.model.StringPosition
-import org.samo_lego.katara.util.InstrumentType
 import org.samo_lego.katara.util.NoteFrequency
 import org.samo_lego.katara.util.TuningDirection
 
@@ -70,7 +69,7 @@ fun GuitarWithTuners(
                     activeString = activeString,
                     tuningDirection = tuningDirection,
                     spec = layoutSpec,
-                    getStringNumber = { InstrumentType.GUITAR_STANDARD.getStringNumber(it) },
+                    getStringNumber = { layoutSpec.instrumentNotes.getStringNumber(it) },
                     scalingInfo = scalingInfo,
                     modifier = Modifier.fillMaxSize()
             )

@@ -44,8 +44,8 @@ enum class NoteFrequency(val note: Note, val frequency: Double, val octave: Int)
         get() = "${note.noteName}$octave"
 }
 
-enum class InstrumentType(val notes: Array<NoteFrequency>) {
-    GUITAR_STANDARD(
+enum class InstrumentNotes(val notes: Array<NoteFrequency>) {
+    GUITAR_NOTES(
             arrayOf(
                     NoteFrequency.E4,
                     NoteFrequency.B3,
@@ -55,7 +55,7 @@ enum class InstrumentType(val notes: Array<NoteFrequency>) {
                     NoteFrequency.E2
             )
     ),
-    UKULELE(
+    UKULELE_NOTES(
             arrayOf(
                     NoteFrequency.A4,
                     NoteFrequency.E4,

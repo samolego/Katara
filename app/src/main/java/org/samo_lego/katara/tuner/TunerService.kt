@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.samo_lego.katara.util.HarmonicCorrections
-import org.samo_lego.katara.util.InstrumentType
+import org.samo_lego.katara.util.InstrumentNotes
 import org.samo_lego.katara.util.Note
 import org.samo_lego.katara.util.NoteFrequency
 import org.samo_lego.katara.util.TuningDirection
@@ -164,7 +164,7 @@ class TunerService {
         val correctedNoteData = HarmonicCorrections.correctHarmonicConfusion(noteData, frequency)
 
         // Find closest guitar string
-        val closestString = InstrumentType.GUITAR_STANDARD.findClosestString(frequency)
+        val closestString = InstrumentNotes.GUITAR_NOTES.findClosestString(frequency)
 
         // Calculate tuning information
         val centsDifference =

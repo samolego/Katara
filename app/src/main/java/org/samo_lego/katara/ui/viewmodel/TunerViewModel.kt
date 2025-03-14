@@ -17,7 +17,7 @@ import org.samo_lego.katara.tuner.NoteData
 import org.samo_lego.katara.tuner.TunerService
 import org.samo_lego.katara.tuner.TunerState as TunerServiceState
 import org.samo_lego.katara.ui.components.TunerState
-import org.samo_lego.katara.util.InstrumentType
+import org.samo_lego.katara.util.InstrumentNotes
 import org.samo_lego.katara.util.NoteFrequency
 import org.samo_lego.katara.util.TuningDirection
 
@@ -146,7 +146,7 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Create the initial state for all tuner knobs */
     private fun createInitialKnobsState(): Map<NoteFrequency, TunerState> {
-        return InstrumentType.GUITAR_STANDARD.notes.associateWith { note ->
+        return InstrumentNotes.GUITAR_NOTES.notes.associateWith { note ->
             TunerState(
                     note = note.fullNoteName,
                     isActive = false,
