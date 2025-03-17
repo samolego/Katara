@@ -1,11 +1,22 @@
 package org.samo_lego.katara.ui.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalDensity
 import org.samo_lego.katara.model.InstrumentLayoutSpecification
 import org.samo_lego.katara.model.StringData
 import org.samo_lego.katara.model.StringPosition
@@ -52,7 +63,6 @@ fun ActiveStringOverlay(
     }
 }
 
-
 @Composable
 fun GuitarKnob(
     noteFreq: NoteFrequency,
@@ -63,21 +73,36 @@ fun GuitarKnob(
     xOffset: Float,
     isActive: Boolean,
     tuningDirection: TuningDirection,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
-    Canvas(modifier = modifier.fillMaxSize()) {
-        // Calculate scaling factors
-        val scalingInfo = calculateCanvasScaling(size.width, size.height, spec, offsetX = data.knobOffset)
-
-        // Calculate scaled positions
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val density = LocalDensity.current
+        val scalingInfo = calculateCanvasScaling(this.constraints.maxWidth.toFloat(), this.constraints.maxHeight.toFloat(), spec, offsetX = data.knobOffset)
         val center = scalePosition(data.stringPosition.startX, data.stringPosition.startY, scalingInfo)
 
-        // Draw the main string segment
-        drawCircle(
-            color = StringHighlight,
-            radius = 3.5f * scalingInfo.scale,
-            center = center,
-        )
+        val buttonSize = 25f * scalingInfo.scale
+        val buttonSizeDp = with(density) { buttonSize.toDp() }
+
+        // Position the button at the calculated center position
+        val xOffset = with(density) { (center.x - buttonSize / 2).toDp() }
+        val yOffset = with(density) { (center.y - buttonSize / 2).toDp() }
+
+        Box(
+            modifier = Modifier
+                .offset(x = xOffset, y = yOffset)
+                .size(buttonSizeDp)
+                .clip(CircleShape)
+                .background(StringHighlight)
+                .clickable { onClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            // Add text or any other composable you want inside the button
+            Text(
+                text = noteFreq.toString(),
+                color = androidx.compose.ui.graphics.Color.White
+            )
+        }
     }
 }
 
