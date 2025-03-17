@@ -109,6 +109,9 @@ private fun TunersLayout(
                 isActive = noteFreq == activeString,
                 tuningDirection = if (noteFreq == activeString) tuningDirection
                                   else TuningDirection.IN_TUNE,
+                onClick = {
+                    // Toggle auto mode
+                },
             )
         }
     }
