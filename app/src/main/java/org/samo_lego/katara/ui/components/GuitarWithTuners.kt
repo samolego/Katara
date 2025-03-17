@@ -39,9 +39,6 @@ fun GuitarWithTuners(
     // Track the component size to calculate scaling
     val size = remember { mutableStateOf(IntSize.Zero) }
 
-    // Calculate scaling info when size changes
-    val scalingInfo = remember(size.value) { calculateScaling(size.value, layoutSpec) }
-
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         // Container for the guitar and tuners
         Box(
@@ -72,7 +69,6 @@ fun GuitarWithTuners(
                 activeString = activeString,
                 tuningDirection = tuningDirection,
                 spec = layoutSpec,
-                scalingInfo = scalingInfo,
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -99,69 +95,23 @@ private fun TunersLayout(
     activeString: NoteFrequency?,
     tuningDirection: TuningDirection,
     spec: InstrumentLayoutSpecification,
-    scalingInfo: ScalingInfo,
     modifier: Modifier = Modifier
 ) {
-    // Size of the tuner knob in SVG coordinates
-    val tunerRadius = 12f
-
     Box(modifier = modifier) {
         // Display each tuner knob
         spec.stringDataMap.forEach { (noteFreq, stringData) ->
             GuitarKnob(
-            //TunerKnobForString(
-                    noteFreq = noteFreq,
-                    //position = stringData.stringPosition,
-                    data = stringData,
-                    modifier = modifier,
-                    spec = spec,
-                    tuningDirection = tuningDirection,
-                    tunerRadius = tunerRadius,
-                    isLeftSide = stringData.knobOffset < 0.0f,
-                    xOffset = stringData.knobOffset,
-                    //scalingInfo = scalingInfo,
-                    isActive = noteFreq == activeString,
-                    /*tuningDirection =
-                            if (noteFreq == activeString) tuningDirection
-                            else TuningDirection.IN_TUNE*/
+                noteFreq = noteFreq,
+                data = stringData,
+                modifier = modifier,
+                spec = spec,
+                isLeftSide = stringData.knobOffset < 0.0f,
+                isActive = noteFreq == activeString,
+                tuningDirection = if (noteFreq == activeString) tuningDirection
+                                  else TuningDirection.IN_TUNE,
             )
         }
     }
-}
-
-/** Position and render a single tuner knob for a string */
-@Composable
-private fun TunerKnobForString(
-        noteFreq: NoteFrequency,
-        position: StringPosition,
-        tunerRadius: Float,
-        isLeftSide: Boolean,
-        xOffset: Float,
-        scalingInfo: ScalingInfo,
-        isActive: Boolean,
-        tuningDirection: TuningDirection
-) {
-    // Calculate position
-    val (scale, offsetX, offsetY) = scalingInfo
-    val x = (position.startX - tunerRadius + xOffset) * scale + offsetX
-    val y = (position.startY - tunerRadius) * scale + offsetY
-
-    // Create and position the tuner knob
-    GuitarTunerKnob(
-            tuner =
-                    TunerState(
-                            note = noteFreq.fullNoteName,
-                            tuningDirection = tuningDirection,
-                            isActive = isActive,
-                    ),
-            isLeftSide = isLeftSide,
-            onRotationChange = {},
-            modifier =
-                    Modifier.graphicsLayer {
-                        translationX = x
-                        translationY = y
-                    }
-    )
 }
 
 @Preview

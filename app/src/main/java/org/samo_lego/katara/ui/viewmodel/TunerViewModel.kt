@@ -5,19 +5,16 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.samo_lego.katara.model.InstrumentLayoutSpecification
 import org.samo_lego.katara.tuner.NoteData
 import org.samo_lego.katara.tuner.TunerService
-import org.samo_lego.katara.tuner.TunerState as TunerServiceState
-import org.samo_lego.katara.ui.components.TunerState
+import org.samo_lego.katara.tuner.TunerServiceState as TunerServiceState
+import org.samo_lego.katara.util.TunerState
 import org.samo_lego.katara.util.InstrumentNotes
 import org.samo_lego.katara.util.NoteFrequency
 import org.samo_lego.katara.util.TuningDirection
@@ -45,7 +42,7 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
     init {
         // Observe tuner service state
         viewModelScope.launch {
-            tunerService.tunerState.collectLatest { state -> updateTunerState(state) }
+            tunerService.tunerServiceState.collectLatest { state -> updateTunerState(state) }
         }
 
         // Observe note data from the tuner service

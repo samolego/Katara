@@ -126,7 +126,7 @@ object HarmonicCorrections {
                             NoteFrequency.E2
                     ), // E3 -> E2 if below 165 Hz
                     RangeCorrection(Note.A, 2, 300.0, 340.0, NoteFrequency.E4),
-                    RangeCorrection(Note.E, 2, 230.0, 260.0, NoteFrequency.B3)
+                    RangeCorrection(Note.E, 2, 230.0, 260.0, NoteFrequency.B3),
             )
 
     /** Correct common harmonic confusion issues */

@@ -9,14 +9,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.model.InstrumentLayoutSpecification
 import org.samo_lego.katara.model.StringData
 import org.samo_lego.katara.model.StringPosition
@@ -63,7 +66,7 @@ fun ActiveStringOverlay(
     }
 }
 
-@Composable
+/*@Composable
 fun GuitarKnob(
     noteFreq: NoteFrequency,
     data: StringData,
@@ -92,7 +95,7 @@ fun GuitarKnob(
             modifier = Modifier
                 .offset(x = xOffset, y = yOffset)
                 .size(buttonSizeDp)
-                .clip(CircleShape)
+                .clip(RoundedCornerShape(8.dp))
                 .background(StringHighlight)
                 .clickable { onClick() },
             contentAlignment = Alignment.Center
@@ -100,33 +103,10 @@ fun GuitarKnob(
             // Add text or any other composable you want inside the button
             Text(
                 text = noteFreq.toString(),
-                color = androidx.compose.ui.graphics.Color.White
+                color = Color.White
             )
         }
     }
-}
+}*/
 
-/** Scaling information for the canvas */
-private data class CanvasScalingInfo(val scale: Float, val offsetX: Float, val offsetY: Float)
 
-/** Calculate scaling information for the canvas */
-private fun calculateCanvasScaling(
-        canvasWidth: Float,
-        canvasHeight: Float,
-        spec: InstrumentLayoutSpecification,
-        offsetX: Float = 0f,
-): CanvasScalingInfo {
-    val scaleX = canvasWidth / spec.viewportWidth
-    val scaleY = canvasHeight / spec.viewportHeight
-    val scale = minOf(scaleX, scaleY)
-
-    val offsetX = (canvasWidth - (spec.viewportWidth * scale)) / 2f + offsetX * scale
-    val offsetY = (canvasHeight - (spec.viewportHeight * scale)) / 2f
-
-    return CanvasScalingInfo(scale, offsetX, offsetY)
-}
-
-/** Scale a position from SVG coordinates to canvas coordinates */
-private fun scalePosition(x: Float, y: Float, scaling: CanvasScalingInfo): Offset {
-    return Offset(x = x * scaling.scale + scaling.offsetX, y = y * scaling.scale + scaling.offsetY)
-}

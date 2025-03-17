@@ -37,8 +37,8 @@ class TunerService {
         private const val SILENCE_RESET_THRESHOLD = 10
     }
 
-    private val _tunerState = MutableStateFlow<TunerState>(TunerState.Inactive)
-    val tunerState: StateFlow<TunerState> = _tunerState.asStateFlow()
+    private val _tunerServiceState = MutableStateFlow<TunerServiceState>(TunerServiceState.Inactive)
+    val tunerServiceState: StateFlow<TunerServiceState> = _tunerServiceState.asStateFlow()
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var audioJob: Job? = null
@@ -57,7 +57,7 @@ class TunerService {
         if (isRunning) return
 
         try {
-            _tunerState.value = TunerState.Starting
+            _tunerServiceState.value = TunerServiceState.Starting
 
             // Create and configure audio dispatcher
             val audioDispatcher =
@@ -72,16 +72,16 @@ class TunerService {
                             audioDispatcher.run()
                         } catch (e: Exception) {
                             Log.e(TAG, "Error in audio dispatcher", e)
-                            _tunerState.value =
-                                    TunerState.Error("Audio processing error: ${e.message}")
+                            _tunerServiceState.value =
+                                    TunerServiceState.Error("Audio processing error: ${e.message}")
                         }
                     }
 
             isRunning = true
-            _tunerState.value = TunerState.Active
+            _tunerServiceState.value = TunerServiceState.Active
         } catch (e: Exception) {
             Log.e(TAG, "Error starting tuner", e)
-            _tunerState.value = TunerState.Error(e.message ?: "Unknown error")
+            _tunerServiceState.value = TunerServiceState.Error(e.message ?: "Unknown error")
             stop()
         }
     }
@@ -103,11 +103,11 @@ class TunerService {
             silentFrameCount = 0
             lastValidNote = null
 
-            _tunerState.value = TunerState.Inactive
+            _tunerServiceState.value = TunerServiceState.Inactive
             _currentNoteData.value = null
         } catch (e: Exception) {
             Log.e(TAG, "Error stopping tuner", e)
-            _tunerState.value = TunerState.Error(e.message ?: "Unknown error stopping tuner")
+            _tunerServiceState.value = TunerServiceState.Error(e.message ?: "Unknown error stopping tuner")
         }
     }
 
@@ -224,11 +224,11 @@ class TunerService {
 }
 
 /** Represents the current state of the tuner */
-sealed class TunerState {
-    object Inactive : TunerState()
-    object Starting : TunerState()
-    object Active : TunerState()
-    data class Error(val message: String) : TunerState()
+sealed class TunerServiceState {
+    object Inactive : TunerServiceState()
+    object Starting : TunerServiceState()
+    object Active : TunerServiceState()
+    data class Error(val message: String) : TunerServiceState()
 }
 
 /** Contains information about a detected note */
