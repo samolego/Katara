@@ -7,8 +7,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import org.samo_lego.katara.model.InstrumentLayoutSpecification
+import org.samo_lego.katara.model.StringData
+import org.samo_lego.katara.model.StringPosition
 import org.samo_lego.katara.ui.theme.StringHighlight
 import org.samo_lego.katara.util.NoteFrequency
+import org.samo_lego.katara.util.TuningDirection
 
 /** Renders a highlight overlay for the active string */
 @Composable
@@ -49,6 +52,35 @@ fun ActiveStringOverlay(
     }
 }
 
+
+@Composable
+fun GuitarKnob(
+    noteFreq: NoteFrequency,
+    data: StringData,
+    spec: InstrumentLayoutSpecification,
+    tunerRadius: Float,
+    isLeftSide: Boolean,
+    xOffset: Float,
+    isActive: Boolean,
+    tuningDirection: TuningDirection,
+    modifier: Modifier,
+) {
+    Canvas(modifier = modifier.fillMaxSize()) {
+        // Calculate scaling factors
+        val scalingInfo = calculateCanvasScaling(size.width, size.height, spec, offsetX = data.knobOffset)
+
+        // Calculate scaled positions
+        val center = scalePosition(data.stringPosition.startX, data.stringPosition.startY, scalingInfo)
+
+        // Draw the main string segment
+        drawCircle(
+            color = StringHighlight,
+            radius = 3.5f * scalingInfo.scale,
+            center = center,
+        )
+    }
+}
+
 /** Scaling information for the canvas */
 private data class CanvasScalingInfo(val scale: Float, val offsetX: Float, val offsetY: Float)
 
@@ -56,13 +88,14 @@ private data class CanvasScalingInfo(val scale: Float, val offsetX: Float, val o
 private fun calculateCanvasScaling(
         canvasWidth: Float,
         canvasHeight: Float,
-        spec: InstrumentLayoutSpecification
+        spec: InstrumentLayoutSpecification,
+        offsetX: Float = 0f,
 ): CanvasScalingInfo {
     val scaleX = canvasWidth / spec.viewportWidth
     val scaleY = canvasHeight / spec.viewportHeight
     val scale = minOf(scaleX, scaleY)
 
-    val offsetX = (canvasWidth - (spec.viewportWidth * scale)) / 2f
+    val offsetX = (canvasWidth - (spec.viewportWidth * scale)) / 2f + offsetX * scale
     val offsetY = (canvasHeight - (spec.viewportHeight * scale)) / 2f
 
     return CanvasScalingInfo(scale, offsetX, offsetY)

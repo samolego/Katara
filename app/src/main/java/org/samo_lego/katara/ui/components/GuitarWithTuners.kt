@@ -1,5 +1,6 @@
 package org.samo_lego.katara.ui.components
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -10,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
@@ -19,6 +21,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.model.InstrumentLayoutSpecification
 import org.samo_lego.katara.model.StringPosition
+import org.samo_lego.katara.ui.theme.StringHighlight
 import org.samo_lego.katara.util.NoteFrequency
 import org.samo_lego.katara.util.TuningDirection
 
@@ -105,17 +108,22 @@ private fun TunersLayout(
     Box(modifier = modifier) {
         // Display each tuner knob
         spec.stringDataMap.forEach { (noteFreq, stringData) ->
-            TunerKnobForString(
+            GuitarKnob(
+            //TunerKnobForString(
                     noteFreq = noteFreq,
-                    position = stringData.stringPosition,
+                    //position = stringData.stringPosition,
+                    data = stringData,
+                    modifier = modifier,
+                    spec = spec,
+                    tuningDirection = tuningDirection,
                     tunerRadius = tunerRadius,
                     isLeftSide = stringData.knobOffset < 0.0f,
                     xOffset = stringData.knobOffset,
-                    scalingInfo = scalingInfo,
+                    //scalingInfo = scalingInfo,
                     isActive = noteFreq == activeString,
-                    tuningDirection =
+                    /*tuningDirection =
                             if (noteFreq == activeString) tuningDirection
-                            else TuningDirection.IN_TUNE
+                            else TuningDirection.IN_TUNE*/
             )
         }
     }
