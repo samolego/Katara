@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.samo_lego.katara.model.InstrumentLayoutSpecification
+import org.samo_lego.katara.instrument.InstrumentLayoutSpecification
 import org.samo_lego.katara.tuner.NoteData
 import org.samo_lego.katara.tuner.NoteFrequency
 import org.samo_lego.katara.tuner.TunerService

@@ -1,4 +1,4 @@
-package org.samo_lego.katara.tuner
+package org.samo_lego.katara.audio
 
 import android.annotation.SuppressLint
 import android.media.AudioFormat

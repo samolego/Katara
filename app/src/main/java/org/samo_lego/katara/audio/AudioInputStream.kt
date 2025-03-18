@@ -1,4 +1,4 @@
-package org.samo_lego.katara.tuner
+package org.samo_lego.katara.audio
 
 import android.media.AudioRecord
 import android.util.Log

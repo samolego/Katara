@@ -1,7 +1,7 @@
-package org.samo_lego.katara.ui.components
+package org.samo_lego.katara.ui.util
 
 import androidx.compose.ui.geometry.Offset
-import org.samo_lego.katara.model.InstrumentLayoutSpecification
+import org.samo_lego.katara.instrument.InstrumentLayoutSpecification
 
 /** Scaling information for the canvas */
 data class CanvasScalingInfo(val scale: Float, val offsetX: Float, val offsetY: Float)

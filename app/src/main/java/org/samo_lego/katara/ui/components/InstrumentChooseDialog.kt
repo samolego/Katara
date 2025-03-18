@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import org.samo_lego.katara.model.InstrumentLayoutSpecification
+import org.samo_lego.katara.instrument.InstrumentLayoutSpecification
 
 @Composable
 fun InstrumentChooseDialog(

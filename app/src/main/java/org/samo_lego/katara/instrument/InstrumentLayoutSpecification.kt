@@ -1,4 +1,4 @@
-package org.samo_lego.katara.model
+package org.samo_lego.katara.instrument
 
 import org.samo_lego.katara.R
 import org.samo_lego.katara.tuner.NoteFrequency

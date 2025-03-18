@@ -1,4 +1,4 @@
-package org.samo_lego.katara.ui.components
+package org.samo_lego.katara.ui.components.drawing
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
@@ -30,13 +30,15 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import org.samo_lego.katara.model.InstrumentLayoutSpecification
-import org.samo_lego.katara.model.StringData
+import org.samo_lego.katara.instrument.InstrumentLayoutSpecification
+import org.samo_lego.katara.instrument.StringData
+import org.samo_lego.katara.tuner.NoteFrequency
+import org.samo_lego.katara.tuner.TuningDirection
+import org.samo_lego.katara.ui.util.calculateCanvasScaling
+import org.samo_lego.katara.ui.util.scalePosition
 import org.samo_lego.katara.ui.theme.TuneOk
 import org.samo_lego.katara.ui.theme.TuneTooHigh
 import org.samo_lego.katara.ui.theme.TuneTooLow
-import org.samo_lego.katara.tuner.NoteFrequency
-import org.samo_lego.katara.tuner.TuningDirection
 
 @Composable
 fun GuitarKnob(
@@ -52,14 +54,14 @@ fun GuitarKnob(
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val density = LocalDensity.current
         val scalingInfo =
-                calculateCanvasScaling(
-                        this.constraints.maxWidth.toFloat(),
-                        this.constraints.maxHeight.toFloat(),
-                        spec,
-                        offsetX = data.knobOffset
-                )
+            calculateCanvasScaling(
+                this.constraints.maxWidth.toFloat(),
+                this.constraints.maxHeight.toFloat(),
+                spec,
+                offsetX = data.knobOffset
+            )
         val center =
-                scalePosition(data.stringPosition.startX, data.stringPosition.startY, scalingInfo)
+            scalePosition(data.stringPosition.startX, data.stringPosition.startY, scalingInfo)
 
         val buttonSize = 25f * scalingInfo.scale
         val buttonSizeDp = with(density) { buttonSize.toDp() }

@@ -31,7 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.R
-import org.samo_lego.katara.ui.components.GuitarWithTuners
+import org.samo_lego.katara.ui.components.drawing.GuitarWithTuners
 import org.samo_lego.katara.ui.components.InstrumentChooseDialog
 import org.samo_lego.katara.ui.components.TuningInfoDisplay
 import org.samo_lego.katara.ui.viewmodel.TunerViewModel

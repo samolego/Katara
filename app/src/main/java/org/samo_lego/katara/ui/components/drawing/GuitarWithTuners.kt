@@ -1,4 +1,4 @@
-package org.samo_lego.katara.ui.components
+package org.samo_lego.katara.ui.components.drawing
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -16,7 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import org.samo_lego.katara.model.InstrumentLayoutSpecification
+import org.samo_lego.katara.instrument.InstrumentLayoutSpecification
 import org.samo_lego.katara.tuner.NoteFrequency
 import org.samo_lego.katara.tuner.TuningDirection
 
