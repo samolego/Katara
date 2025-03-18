@@ -1,6 +1,5 @@
 package org.samo_lego.katara.ui
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -18,6 +17,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -35,6 +35,7 @@ import org.samo_lego.katara.ui.components.GuitarWithTuners
 import org.samo_lego.katara.ui.components.InstrumentChooseDialog
 import org.samo_lego.katara.ui.components.TuningInfoDisplay
 import org.samo_lego.katara.ui.viewmodel.TunerViewModel
+import org.samo_lego.katara.util.NoteFrequency
 import org.samo_lego.katara.util.TuningDirection
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,6 +44,7 @@ fun KataraApp(tunerViewModel: TunerViewModel) {
     // Collect states from the tuner view model
     val uiState by tunerViewModel.uiState.collectAsState()
     val activeString = uiState.activeString
+    val manualMode = uiState.manualMode
     val currentNote = uiState.currentNote
     val isListening = uiState.isListening
 
@@ -55,6 +57,10 @@ fun KataraApp(tunerViewModel: TunerViewModel) {
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 AppTopBar(
+                    manualMode = manualMode,
+                    onManualModeToggle = {
+                        tunerViewModel.toggleManualMode(if (it) NoteFrequency.A4 else null)
+                    },
                     openInstrumentChooseDialog = {
                         showInstrumentChooseDialog.value = true
                     }
@@ -66,14 +72,23 @@ fun KataraApp(tunerViewModel: TunerViewModel) {
             // Main content layout
             Column(
                     modifier =
-                            Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 8.dp)
+                    Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(horizontal = 8.dp)
             ) {
                 // Guitar visualization (top 3/4)
                 GuitarWithTuners(
                         activeString = activeString,
                         tuningDirection = tuningDirection,
                         layoutSpec = uiState.chosenInstrument,
-                        modifier = Modifier.weight(3f).fillMaxSize().aspectRatio(0.5f),
+                        modifier = Modifier
+                            .weight(3f)
+                            .fillMaxSize()
+                            .aspectRatio(0.5f),
+                        manualModeClick = {
+                            tunerViewModel.toggleManualMode(it)
+                        }
                 )
 
                 // Tuning info display (bottom 1/4)
@@ -112,7 +127,9 @@ fun KataraApp(tunerViewModel: TunerViewModel) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AppTopBar(
-    openInstrumentChooseDialog: () -> Unit = {}
+    manualMode: Boolean,
+    onManualModeToggle: (Boolean) -> Unit,
+    openInstrumentChooseDialog: () -> Unit = {},
 ) {
     CenterAlignedTopAppBar(
             title = {
@@ -122,6 +139,18 @@ private fun AppTopBar(
                 ) {
                     Text(text = stringResource(R.string.app_name))
                     Text(text = "To my ❤, Rebeka", style = MaterialTheme.typography.bodySmall)
+                }
+            },
+            navigationIcon = {
+                Column(
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Switch(
+                        checked = manualMode,
+                        onCheckedChange = {
+                            onManualModeToggle(it)
+                        }
+                    )
                 }
             },
             colors =
@@ -147,10 +176,14 @@ private fun AppTopBar(
 @Composable
 private fun TuningWaitingDisplay(modifier: Modifier = Modifier) {
     Card(
-            modifier = modifier.fillMaxSize().padding(16.dp),
+            modifier = modifier
+                .fillMaxSize()
+                .padding(16.dp),
     ) {
         Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
         ) {

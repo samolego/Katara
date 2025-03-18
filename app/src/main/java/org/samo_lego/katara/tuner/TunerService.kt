@@ -32,7 +32,6 @@ class TunerService {
         private const val OVERLAP = 1536
         private const val TAG = "TunerService"
 
-        private const val TUNING_TOLERANCE = 10.0
         private const val AMPLITUDE_THRESHOLD = 0.01
         private const val SILENCE_RESET_THRESHOLD = 10
     }
@@ -155,72 +154,7 @@ class TunerService {
     }
 
     /** Process a detected frequency to determine note information */
-    private fun processFrequency(frequency: Double): NoteData {
-        // Calculate basic note data
-        val noteData = calculateNoteData(frequency)
 
-        // Apply harmonic correction if needed
-        val correctedNoteData = HarmonicCorrections.correctHarmonicConfusion(noteData, frequency)
-
-        // Find closest guitar string
-        val closestString = InstrumentNotes.GUITAR_NOTES.findClosestString(frequency)
-
-        // Calculate tuning information
-        val centsDifference =
-                closestString?.let { calculateCentsDifference(frequency, it.frequency) } ?: 0.0
-
-        // Determine tuning direction
-        val tuningDirection = determineTuningDirection(centsDifference)
-
-        // Return complete note data
-        return correctedNoteData.copy(
-                closestGuitarString = closestString,
-                centsDifference = centsDifference,
-                tuningDirection = tuningDirection
-        )
-    }
-
-    /** Determine if note is in tune, too high, or too low */
-    private fun determineTuningDirection(centsDifference: Double): TuningDirection {
-        return when {
-            abs(centsDifference) <= TUNING_TOLERANCE -> TuningDirection.IN_TUNE
-            centsDifference > 0 -> TuningDirection.TOO_HIGH
-            else -> TuningDirection.TOO_LOW
-        }
-    }
-
-    /** Calculate information about a note from its frequency */
-    private fun calculateNoteData(frequency: Double): NoteData {
-        val semitoneFromA4 = 12 * log2(frequency / NoteFrequency.A4.frequency)
-        val midiNote = (69 + semitoneFromA4).roundToInt()
-
-        // Get note and octave from MIDI note
-        val noteIndex = (midiNote % 12)
-        val noteName = Note.getOrderedNotes()[noteIndex].noteName
-        val octave = (midiNote / 12) - 1
-
-        // Calculate exact frequency for this note
-        val exactFrequency = NoteFrequency.A4.frequency * 2.0.pow((midiNote - 69) / 12.0)
-
-        // Calculate cents off from the exact note frequency
-        val cents = 1200 * log2(frequency / exactFrequency)
-
-        return NoteData(
-                frequency = frequency,
-                midiNote = midiNote,
-                noteName = noteName,
-                octave = octave,
-                cents = cents,
-                closestGuitarString = null,
-                centsDifference = 0.0,
-                tuningDirection = TuningDirection.IN_TUNE
-        )
-    }
-
-    /** Calculate the difference in cents between two frequencies */
-    private fun calculateCentsDifference(detectedFreq: Double, targetFreq: Double): Double {
-        return 1200 * log2(detectedFreq / targetFreq)
-    }
 }
 
 /** Represents the current state of the tuner */

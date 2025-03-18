@@ -13,11 +13,12 @@ import kotlinx.coroutines.launch
 import org.samo_lego.katara.model.InstrumentLayoutSpecification
 import org.samo_lego.katara.tuner.NoteData
 import org.samo_lego.katara.tuner.TunerService
-import org.samo_lego.katara.tuner.TunerServiceState as TunerServiceState
-import org.samo_lego.katara.util.TunerState
+import org.samo_lego.katara.tuner.calculateStringDifference
 import org.samo_lego.katara.util.InstrumentNotes
 import org.samo_lego.katara.util.NoteFrequency
+import org.samo_lego.katara.util.TunerState
 import org.samo_lego.katara.util.TuningDirection
+import org.samo_lego.katara.tuner.TunerServiceState as TunerServiceState
 
 /** ViewModel for the tuner screen */
 class TunerViewModel(application: Application) : AndroidViewModel(application) {
@@ -28,6 +29,7 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
             val isListening: Boolean = false,
             val chosenInstrument: InstrumentLayoutSpecification = InstrumentLayoutSpecification.GUITAR_STANDARD,
             val activeString: NoteFrequency? = null,
+            val manualMode: Boolean = false,
             val currentNote: NoteData? = null,
             val tunerKnobsState: Map<NoteFrequency, TunerState> = emptyMap(),
             val errorMessage: String? = null,
@@ -73,12 +75,24 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /** Allow toggling manual mode */
+    fun toggleManualMode(note: NoteFrequency?) {
+        _uiState.update { currentState ->
+                val nextMode = (!currentState.manualMode || currentState.activeString != note) && note != null
+                val string = if (nextMode) {
+                    note
+                } else {
+                    null
+                }
+                currentState.copy(manualMode = nextMode, activeString = string)
+        }
+    }
+
     /** Process detected note data and update UI state */
     private fun processNoteData(noteData: NoteData?) {
         if (noteData == null) {
             _uiState.update { currentState ->
                 currentState.copy(
-                        activeString = null,
                         currentNote = null,
                         tunerKnobsState = resetAllKnobStates(currentState.tunerKnobsState)
                 )
@@ -89,14 +103,19 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
         // Update with detected note if we have a matching string
         noteData.closestGuitarString?.let { detectedString ->
             _uiState.update { currentState ->
+                val data = if (currentState.manualMode) {
+                   calculateStringDifference(noteData, noteData.frequency, currentState.activeString!!)
+                } else {
+                    noteData
+                }
                 currentState.copy(
-                        activeString = detectedString,
-                        currentNote = noteData,
+                        activeString = data.closestGuitarString,
+                        currentNote = data,
                         tunerKnobsState =
                                 updateKnobsForDetectedNote(
                                         currentState.tunerKnobsState,
                                         detectedString,
-                                        noteData.tuningDirection
+                                        data.tuningDirection
                                 )
                 )
             }

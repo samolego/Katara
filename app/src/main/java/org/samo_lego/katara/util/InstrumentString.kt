@@ -73,11 +73,6 @@ enum class InstrumentNotes(val notes: Array<NoteFrequency>) {
 
         return if (minPercentDifference <= maxPercentDifference) closestNote else null
     }
-
-    /** Get string number (1-indexed) for a note frequency in this instrument */
-    fun getStringNumber(noteFreq: NoteFrequency): Int {
-        return notes.indexOf(noteFreq) + 1
-    }
 }
 
 /** Helper object for correcting harmonic confusion in pitch detection */

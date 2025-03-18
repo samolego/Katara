@@ -7,6 +7,12 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val keystoreProperties = Properties()
+val keystorePropertiesFile: File = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "org.samo_lego.katara"
     compileSdk = 35
@@ -25,13 +31,13 @@ android {
 
     signingConfigs {
         create("release") {
-            val keystorePropertiesFile = rootProject.file("key.properties")
-            val keystoreProperties = Properties()
-            keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
+            keyAlias = keystoreProperties["keyAlias"].toString()
+            keyPassword = keystoreProperties["keyPassword"].toString()
+            storeFile =
+                if (keystoreProperties["storeFile"] != null) keystoreProperties["storeFile"]?.let {
+                    file(it)
+                } else null
+            storePassword = keystoreProperties["storePassword"].toString()
         }
     }
 
@@ -42,6 +48,7 @@ android {
         }
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                     getDefaultProguardFile("proguard-android-optimize.txt"),
                     "proguard-rules.pro"

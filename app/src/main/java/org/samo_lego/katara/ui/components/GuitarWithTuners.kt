@@ -1,6 +1,5 @@
 package org.samo_lego.katara.ui.components
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -11,8 +10,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
@@ -20,8 +17,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.model.InstrumentLayoutSpecification
-import org.samo_lego.katara.model.StringPosition
-import org.samo_lego.katara.ui.theme.StringHighlight
 import org.samo_lego.katara.util.NoteFrequency
 import org.samo_lego.katara.util.TuningDirection
 
@@ -34,7 +29,8 @@ fun GuitarWithTuners(
     tuningDirection: TuningDirection,
     modifier: Modifier = Modifier,
     layoutSpec: InstrumentLayoutSpecification,
-    imageSize: Float = 0.7f
+    imageSize: Float = 0.7f,
+    manualModeClick: (NoteFrequency) -> Unit = {},
 ) {
     // Track the component size to calculate scaling
     val size = remember { mutableStateOf(IntSize.Zero) }
@@ -69,6 +65,7 @@ fun GuitarWithTuners(
                 activeString = activeString,
                 tuningDirection = tuningDirection,
                 spec = layoutSpec,
+                manualModeClick = manualModeClick,
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -95,7 +92,8 @@ private fun TunersLayout(
     activeString: NoteFrequency?,
     tuningDirection: TuningDirection,
     spec: InstrumentLayoutSpecification,
-    modifier: Modifier = Modifier
+    manualModeClick: (NoteFrequency) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier) {
         // Display each tuner knob
@@ -110,7 +108,7 @@ private fun TunersLayout(
                 tuningDirection = if (noteFreq == activeString) tuningDirection
                                   else TuningDirection.IN_TUNE,
                 onClick = {
-                    // Toggle auto mode
+                    manualModeClick(noteFreq)
                 },
             )
         }
@@ -125,6 +123,7 @@ fun GuitarPreview() {
         tuningDirection = TuningDirection.TOO_HIGH,
         layoutSpec = InstrumentLayoutSpecification.GUITAR_STANDARD,
         modifier = Modifier.fillMaxSize().aspectRatio(0.5f),
+
     )
 }
 
