@@ -20,6 +20,7 @@ data class InstrumentLayoutSpecification(
             init {
                 // Guitar
                 val knobOffset = 50f
+                val knobOffsetMiddle = 45f
                 val leftStartX = 36f
                 val rightStartX = 116f
 
@@ -29,10 +30,10 @@ data class InstrumentLayoutSpecification(
 
                     val stringDataMap = mapOf(
                             NoteFrequency.D3 to StringData(4, -knobOffset, StringPosition(leftStartX, topY, 69f)),
-                            NoteFrequency.A2 to StringData(5, -knobOffset, StringPosition(leftStartX, middleY, 57f)),
+                            NoteFrequency.A2 to StringData(5, -knobOffsetMiddle, StringPosition(leftStartX, middleY, 57f)),
                             NoteFrequency.E2 to StringData(6, -knobOffset, StringPosition(leftStartX, bottomY, 47f)),
                             NoteFrequency.G3 to StringData(3, knobOffset, StringPosition(rightStartX, topY, 83f)),
-                            NoteFrequency.B3 to StringData(2, knobOffset, StringPosition(rightStartX, middleY, 94f)),
+                            NoteFrequency.B3 to StringData(2, knobOffsetMiddle, StringPosition(rightStartX, middleY, 94f)),
                             NoteFrequency.E4 to StringData(1, knobOffset, StringPosition(rightStartX, bottomY, 104f)),
                     )
                     GUITAR_STANDARD = InstrumentLayoutSpecification(

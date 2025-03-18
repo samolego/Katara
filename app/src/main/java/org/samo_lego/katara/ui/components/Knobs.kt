@@ -19,10 +19,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,7 +68,7 @@ fun GuitarKnob(
         val scaleAnim = remember { Animatable(1f) }
         val elevationAnim = remember { Animatable(4f) }
         val rotationXAnim = remember { Animatable(0f) }
-        val rotationYAnim = remember { Animatable(-15f) }
+        val rotationYAnim = remember { Animatable(getInitialYRotation(isLeftSide)) }
 
         // Track animation completion status to avoid re-triggering
         val animationInProgress = remember { mutableStateOf(false) }
@@ -106,7 +104,7 @@ fun GuitarKnob(
                             TuningDirection.TOO_LOW -> {
                                 // Quick prepare animation
                                 rotationYAnim.animateTo(
-                                        -20f,
+                                        if (isLeftSide) -20f else 20f,
                                         animationSpec = KnobAnimations.instantSpec
                                 )
 
@@ -118,14 +116,14 @@ fun GuitarKnob(
 
                                 // Return to neutral position
                                 rotationYAnim.animateTo(
-                                        -15f,
+                                        getInitialYRotation(isLeftSide),
                                         animationSpec = KnobAnimations.quickAdjustmentSpec
                                 )
                             }
                             TuningDirection.TOO_HIGH -> {
                                 // Quick prepare animation
                                 rotationYAnim.animateTo(
-                                        -10f,
+                                        if (isLeftSide) -10f else 10f,
                                         animationSpec = KnobAnimations.instantSpec
                                 )
 
@@ -137,7 +135,7 @@ fun GuitarKnob(
 
                                 // Return to neutral position
                                 rotationYAnim.animateTo(
-                                        -15f,
+                                        getInitialYRotation(isLeftSide),
                                         animationSpec = KnobAnimations.quickAdjustmentSpec
                                 )
                             }
@@ -160,7 +158,7 @@ fun GuitarKnob(
                 // When becoming inactive, ensure a smooth finish rather than abrupt reset
                 // Only animate if we need to return to default state
                 if (rotationXAnim.value != 0f ||
-                                rotationYAnim.value != -15f ||
+                                rotationYAnim.value != getInitialYRotation(isLeftSide) ||
                                 scaleAnim.value != 1f ||
                                 elevationAnim.value != 4f
                 ) {
@@ -169,7 +167,7 @@ fun GuitarKnob(
                     try {
                         // Complete animations smoothly rather than abruptly stopping
                         rotationYAnim.animateTo(
-                                -15f,
+                                getInitialYRotation(isLeftSide),
                                 animationSpec = KnobAnimations.finishSmoothlySpec
                         )
                         rotationXAnim.animateTo(
@@ -207,9 +205,9 @@ fun GuitarKnob(
                                     transformOrigin =
                                             TransformOrigin(if (isLeftSide) 1.1f else -0.1f, 0.5f)
                                     shadowElevation = elevationAnim.value
-                                    shape = RoundedCornerShape(8.dp)
+                                    shape = RoundedCornerShape(16.dp)
                                 }
-                                .clip(RoundedCornerShape(8.dp))
+                                .clip(RoundedCornerShape(16.dp))
                                 .background(color)
                                 .clickable { onClick() },
                 contentAlignment = Alignment.Center
@@ -221,6 +219,10 @@ fun GuitarKnob(
             )
         }
     }
+}
+
+private fun getInitialYRotation(isLeftSide: Boolean) : Float {
+    return if (isLeftSide) 15f else -15f
 }
 
 /** Coordinates knob animations to avoid conflicts and ensures smooth transitions */
