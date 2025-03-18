@@ -1,4 +1,4 @@
-package org.samo_lego.katara.util
+package org.samo_lego.katara.tuner
 
 /**
  * Direction of tuning

@@ -35,8 +35,8 @@ import org.samo_lego.katara.ui.components.GuitarWithTuners
 import org.samo_lego.katara.ui.components.InstrumentChooseDialog
 import org.samo_lego.katara.ui.components.TuningInfoDisplay
 import org.samo_lego.katara.ui.viewmodel.TunerViewModel
-import org.samo_lego.katara.util.NoteFrequency
-import org.samo_lego.katara.util.TuningDirection
+import org.samo_lego.katara.tuner.NoteFrequency
+import org.samo_lego.katara.tuner.TuningDirection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

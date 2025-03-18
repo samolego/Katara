@@ -17,8 +17,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import org.samo_lego.katara.model.InstrumentLayoutSpecification
-import org.samo_lego.katara.util.NoteFrequency
-import org.samo_lego.katara.util.TuningDirection
+import org.samo_lego.katara.tuner.NoteFrequency
+import org.samo_lego.katara.tuner.TuningDirection
 
 /** Scaling information for guitar display */
 private data class ScalingInfo(val scale: Float, val offsetX: Float, val offsetY: Float)

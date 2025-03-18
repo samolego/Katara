@@ -1,10 +1,5 @@
 package org.samo_lego.katara.tuner
 
-import org.samo_lego.katara.util.HarmonicCorrections
-import org.samo_lego.katara.util.InstrumentNotes
-import org.samo_lego.katara.util.Note
-import org.samo_lego.katara.util.NoteFrequency
-import org.samo_lego.katara.util.TuningDirection
 import kotlin.math.abs
 import kotlin.math.log2
 import kotlin.math.pow
@@ -20,7 +15,7 @@ fun processFrequency(frequency: Double): NoteData {
     val correctedNoteData = HarmonicCorrections.correctHarmonicConfusion(noteData, frequency)
 
     // Find closest guitar string
-    val closestString = InstrumentNotes.GUITAR_NOTES.findClosestString(frequency)
+    val closestString = NoteFrequency.findClosestString(frequency)
 
     if (closestString != null) {
         return calculateStringDifference(correctedNoteData, frequency, closestString)

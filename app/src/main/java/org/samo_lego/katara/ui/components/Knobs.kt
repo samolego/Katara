@@ -35,8 +35,8 @@ import org.samo_lego.katara.model.StringData
 import org.samo_lego.katara.ui.theme.TuneOk
 import org.samo_lego.katara.ui.theme.TuneTooHigh
 import org.samo_lego.katara.ui.theme.TuneTooLow
-import org.samo_lego.katara.util.NoteFrequency
-import org.samo_lego.katara.util.TuningDirection
+import org.samo_lego.katara.tuner.NoteFrequency
+import org.samo_lego.katara.tuner.TuningDirection
 
 @Composable
 fun GuitarKnob(

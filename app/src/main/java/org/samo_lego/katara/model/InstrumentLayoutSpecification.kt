@@ -1,7 +1,7 @@
 package org.samo_lego.katara.model
 
 import org.samo_lego.katara.R
-import org.samo_lego.katara.util.NoteFrequency
+import org.samo_lego.katara.tuner.NoteFrequency
 
 /** Represents specifications for a guitar type, including string and tuner positions. */
 data class InstrumentLayoutSpecification(
