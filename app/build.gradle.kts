@@ -5,10 +5,12 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.protobuf")
 }
 
 val keystoreProperties = Properties()
 val keystorePropertiesFile: File = rootProject.file("key.properties")
+
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
@@ -34,9 +36,9 @@ android {
             keyAlias = keystoreProperties["keyAlias"].toString()
             keyPassword = keystoreProperties["keyPassword"].toString()
             storeFile =
-                if (keystoreProperties["storeFile"] != null) keystoreProperties["storeFile"]?.let {
-                    file(it)
-                } else null
+                    if (keystoreProperties["storeFile"] != null)
+                            keystoreProperties["storeFile"]?.let { file(it) }
+                    else null
             storePassword = keystoreProperties["storePassword"].toString()
         }
     }
@@ -67,6 +69,24 @@ android {
     }
 }
 
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.21.12"
+    }
+
+    // Configure the protobuf plugin
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins {
+                create("java") {
+                    option("lite")
+                }
+            }
+        }
+    }
+}
+
+
 dependencies {
     implementation(libs.tarsos.core)
     implementation(libs.androidx.core.splashscreen)
@@ -82,6 +102,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.datastore)
+    implementation(libs.protobuf.javalite)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

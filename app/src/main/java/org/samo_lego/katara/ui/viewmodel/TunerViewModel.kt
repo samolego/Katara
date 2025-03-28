@@ -10,21 +10,25 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.samo_lego.katara.data.PreferencesManager
 import org.samo_lego.katara.instrument.InstrumentLayoutSpecification
 import org.samo_lego.katara.tuner.NoteData
 import org.samo_lego.katara.tuner.NoteFrequency
 import org.samo_lego.katara.tuner.TunerService
-import org.samo_lego.katara.tuner.calculateStringDifference
 import org.samo_lego.katara.tuner.TunerState as TunerServiceState
+import org.samo_lego.katara.tuner.calculateStringDifference
 
 /** ViewModel for the tuner screen */
 class TunerViewModel(application: Application) : AndroidViewModel(application) {
     private val tag = "TunerViewModel"
 
+    private val preferencesManager = PreferencesManager(application)
+
     // Consolidated UI state
     data class UiState(
             val isListening: Boolean = false,
-            val chosenInstrument: InstrumentLayoutSpecification = InstrumentLayoutSpecification.GUITAR_STANDARD,
+            val chosenInstrument: InstrumentLayoutSpecification =
+                    InstrumentLayoutSpecification.GUITAR_STANDARD,
             val activeString: NoteFrequency? = null,
             val manualMode: Boolean = false,
             val currentNote: NoteData? = null,
@@ -47,6 +51,13 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             tunerService.currentNoteData.collectLatest { noteData -> processNoteData(noteData) }
         }
+
+        // Load saved instrument preference
+        viewModelScope.launch {
+            preferencesManager.selectedInstrument.collectLatest { instrument ->
+                _uiState.update { currentState -> currentState.copy(chosenInstrument = instrument) }
+            }
+        }
     }
 
     /** Update UI state based on tuner service state */
@@ -66,21 +77,27 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Update the chosen instrument */
     fun updateChosenInstrument(instrument: InstrumentLayoutSpecification) {
-        _uiState.update { currentState ->
-            currentState.copy(chosenInstrument = instrument)
+        viewModelScope.launch {
+            // Save to preferences
+            preferencesManager.updateSelectedInstrument(instrument)
+
+            // Also update UI state immediately
+            _uiState.update { currentState -> currentState.copy(chosenInstrument = instrument) }
         }
     }
 
     /** Allow toggling manual mode */
     fun toggleManualMode(note: NoteFrequency?) {
         _uiState.update { currentState ->
-                val nextMode = (!currentState.manualMode || currentState.activeString != note) && note != null
-                val string = if (nextMode) {
-                    note
-                } else {
-                    null
-                }
-                currentState.copy(manualMode = nextMode, activeString = string)
+            val nextMode =
+                    (!currentState.manualMode || currentState.activeString != note) && note != null
+            val string =
+                    if (nextMode) {
+                        note
+                    } else {
+                        null
+                    }
+            currentState.copy(manualMode = nextMode, activeString = string)
         }
     }
 
@@ -98,11 +115,16 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
         // Update with detected note if we have a matching string
         noteData.closestGuitarString?.let { detectedString ->
             _uiState.update { currentState ->
-                val data = if (currentState.manualMode) {
-                   calculateStringDifference(noteData, noteData.frequency, currentState.activeString!!)
-                } else {
-                    noteData
-                }
+                val data =
+                        if (currentState.manualMode) {
+                            calculateStringDifference(
+                                    noteData,
+                                    noteData.frequency,
+                                    currentState.activeString!!
+                            )
+                        } else {
+                            noteData
+                        }
                 currentState.copy(
                         activeString = data.closestGuitarString,
                         currentNote = data,

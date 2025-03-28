@@ -1,5 +1,7 @@
 package org.samo_lego.katara.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -25,28 +27,38 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import org.samo_lego.katara.R
-import org.samo_lego.katara.ui.components.drawing.GuitarWithTuners
-import org.samo_lego.katara.ui.components.InstrumentChooseDialog
-import org.samo_lego.katara.ui.components.TuningInfoDisplay
-import org.samo_lego.katara.ui.viewmodel.TunerViewModel
+import org.samo_lego.katara.data.PreferencesManager
 import org.samo_lego.katara.tuner.NoteFrequency
 import org.samo_lego.katara.tuner.TuningDirection
+import org.samo_lego.katara.ui.components.InstrumentChooseDialog
+import org.samo_lego.katara.ui.components.TuningInfoDisplay
+import org.samo_lego.katara.ui.components.drawing.GuitarWithTuners
+import org.samo_lego.katara.ui.viewmodel.TunerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun KataraApp(tunerViewModel: TunerViewModel) {
+fun KataraApp(
+        tunerViewModel: TunerViewModel,
+        preferencesManager: PreferencesManager,
+) {
     // Collect states from the tuner view model
     val uiState by tunerViewModel.uiState.collectAsState()
     val activeString = uiState.activeString
     val manualMode = uiState.manualMode
     val currentNote = uiState.currentNote
     val isListening = uiState.isListening
+
+    val showDedicationText by
+            preferencesManager.dedicationTextVisibility.collectAsState(initial = true)
+    val coroutineScope = rememberCoroutineScope()
 
     var showInstrumentChooseDialog = remember { mutableStateOf(false) }
 
@@ -57,13 +69,19 @@ fun KataraApp(tunerViewModel: TunerViewModel) {
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 AppTopBar(
-                    manualMode = manualMode,
-                    onManualModeToggle = {
-                        tunerViewModel.toggleManualMode(if (it) NoteFrequency.A4 else null)
-                    },
-                    openInstrumentChooseDialog = {
-                        showInstrumentChooseDialog.value = true
-                    }
+                        manualMode = manualMode,
+                        showDedicationText = showDedicationText,
+                        onDedicationTextClick = { enable ->
+                            coroutineScope.launch {
+                                preferencesManager.updateDedicationTextVisibility(
+                                        !showDedicationText || enable
+                                )
+                            }
+                        },
+                        onManualModeToggle = {
+                            tunerViewModel.toggleManualMode(if (it) NoteFrequency.A4 else null)
+                        },
+                        openInstrumentChooseDialog = { showInstrumentChooseDialog.value = true }
                 )
             },
             contentWindowInsets = WindowInsets(0, 0, 0, 0)
@@ -72,23 +90,15 @@ fun KataraApp(tunerViewModel: TunerViewModel) {
             // Main content layout
             Column(
                     modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(horizontal = 8.dp)
+                            Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 8.dp)
             ) {
                 // Guitar visualization (top 3/4)
                 GuitarWithTuners(
                         activeString = activeString,
                         tuningDirection = tuningDirection,
                         layoutSpec = uiState.chosenInstrument,
-                        modifier = Modifier
-                            .weight(3f)
-                            .fillMaxSize()
-                            .aspectRatio(0.5f),
-                        manualModeClick = {
-                            tunerViewModel.toggleManualMode(it)
-                        }
+                        modifier = Modifier.weight(3f).fillMaxSize().aspectRatio(0.5f),
+                        manualModeClick = { tunerViewModel.toggleManualMode(it) }
                 )
 
                 // Tuning info display (bottom 1/4)
@@ -111,46 +121,48 @@ fun KataraApp(tunerViewModel: TunerViewModel) {
             }
             if (showInstrumentChooseDialog.value) {
                 InstrumentChooseDialog(
-                    currentInstrument = uiState.chosenInstrument,
-                    onInstrumentSelected = {
-                        tunerViewModel.updateChosenInstrument(it)
-                    },
-                    onDismiss = {
-                        showInstrumentChooseDialog.value = false
-                    }
+                        currentInstrument = uiState.chosenInstrument,
+                        onInstrumentSelected = { tunerViewModel.updateChosenInstrument(it) },
+                        onDismiss = { showInstrumentChooseDialog.value = false }
                 )
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun AppTopBar(
     manualMode: Boolean,
+    showDedicationText: Boolean,
+    onDedicationTextClick: (Boolean) -> Unit,
     onManualModeToggle: (Boolean) -> Unit,
     openInstrumentChooseDialog: () -> Unit = {},
 ) {
     CenterAlignedTopAppBar(
             title = {
                 Column(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier =
+                                Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = stringResource(R.string.app_name))
-                    Text(text = "To my ❤, Rebeka", style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        modifier = Modifier.combinedClickable(
+                            onClick = { onDedicationTextClick(true) },
+                            onLongClick = { onDedicationTextClick(false) }
+                        )
+                    )
+                    if (showDedicationText) {
+                        Text(text = "To my ❤, Rebeka",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
                 }
             },
             navigationIcon = {
-                Column(
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Switch(
-                        checked = manualMode,
-                        onCheckedChange = {
-                            onManualModeToggle(it)
-                        }
-                    )
+                Column(modifier = Modifier.padding(8.dp)) {
+                    Switch(checked = manualMode, onCheckedChange = { onManualModeToggle(it) })
                 }
             },
             colors =
@@ -159,15 +171,8 @@ private fun AppTopBar(
                             titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     ),
             actions = {
-                IconButton(
-                    onClick = {
-                        openInstrumentChooseDialog()
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "More"
-                    )
+                IconButton(onClick = { openInstrumentChooseDialog() }) {
+                    Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More")
                 }
             }
     )
@@ -176,14 +181,10 @@ private fun AppTopBar(
 @Composable
 private fun TuningWaitingDisplay(modifier: Modifier = Modifier) {
     Card(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            modifier = modifier.fillMaxSize().padding(16.dp),
     ) {
         Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
+                modifier = Modifier.fillMaxSize().padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
         ) {

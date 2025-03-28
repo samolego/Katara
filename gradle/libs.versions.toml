@@ -1,6 +1,10 @@
 [versions]
 agp = "8.7.3"
 coreSplashscreen = "1.0.1"
+datastorePreferences = "1.1.4"
+protobufGradlePlugin = "0.9.4"
+protobufJavalite = "3.21.12"
+protobufKotlin = "3.21.12"
 tarsos-core = "2.5"
 kotlin = "2.1.10"
 coreKtx = "1.15.0"
@@ -9,14 +13,17 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
-composeBom = "2025.03.00"
+composeBom = "2025.03.01"
 lifecycleViewmodelCompose = "2.8.7"
 wear = "1.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastorePreferences" }
 androidx-wear = { module = "androidx.wear:wear", version.ref = "wear" }
+protobuf-gradle-plugin = { module = "com.google.protobuf:protobuf-gradle-plugin", version.ref = "protobufGradlePlugin" }
+protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobufJavalite" }
 tarsos-core = { module = "be.tarsos.dsp:core", version.ref = "tarsos-core" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

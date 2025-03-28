@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option java_package = "org.samo_lego.katara.data.proto";
+option java_multiple_files = true;
+
+message AppSettings {
+  // Whether to show the dedication text
+  bool show_dedication_text = 1;
+
+  // The instrument name/type
+  string selected_instrument = 2;
+}

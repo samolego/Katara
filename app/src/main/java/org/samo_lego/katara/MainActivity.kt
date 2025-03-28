@@ -18,6 +18,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.samo_lego.katara.data.PreferencesManager
 import org.samo_lego.katara.ui.KataraApp
 import org.samo_lego.katara.ui.theme.KataraTheme
 import org.samo_lego.katara.ui.viewmodel.TunerViewModel
@@ -26,6 +27,8 @@ class MainActivity : ComponentActivity() {
     // Create view model
     private val tunerViewModel: TunerViewModel by viewModels()
     private val loggerTag = "MainActivity"
+
+    private lateinit var preferencesManager: PreferencesManager
 
     // Permission launcher for requesting microphone access
     private val requestPermissionLauncher =
@@ -46,6 +49,8 @@ class MainActivity : ComponentActivity() {
         setupSplashScreen()
         super.onCreate(savedInstanceState)
 
+        preferencesManager = PreferencesManager(applicationContext)
+
         enableEdgeToEdge()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
@@ -54,7 +59,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             KataraTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    KataraApp(tunerViewModel = tunerViewModel)
+                    KataraApp(
+                            tunerViewModel = tunerViewModel,
+                            preferencesManager = preferencesManager,
+                    )
                 }
             }
         }
