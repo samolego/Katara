@@ -1,5 +1,6 @@
 package org.samo_lego.katara.ui.components.drawing
 
+import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -44,26 +45,26 @@ import org.samo_lego.katara.ui.util.scalePosition
 
 @Composable
 fun GuitarKnob(
-    noteFreq: NoteFrequency,
-    data: StringData,
-    spec: InstrumentLayoutSpecification,
-    isLeftSide: Boolean,
-    isActive: Boolean,
-    tuningDirection: TuningDirection,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
+        noteFreq: NoteFrequency,
+        data: StringData,
+        spec: InstrumentLayoutSpecification,
+        isLeftSide: Boolean,
+        isActive: Boolean,
+        tuningDirection: TuningDirection,
+        modifier: Modifier = Modifier,
+        onClick: () -> Unit = {}
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val density = LocalDensity.current
         val scalingInfo =
-            calculateCanvasScaling(
-                this.constraints.maxWidth.toFloat(),
-                this.constraints.maxHeight.toFloat(),
-                spec,
-                offsetX = data.knobOffset
-            )
+                calculateCanvasScaling(
+                        this.constraints.maxWidth.toFloat(),
+                        this.constraints.maxHeight.toFloat(),
+                        spec,
+                        offsetX = data.knobOffset
+                )
         val center =
-            scalePosition(data.stringPosition.startX, data.stringPosition.startY, scalingInfo)
+                scalePosition(data.stringPosition.startX, data.stringPosition.startY, scalingInfo)
 
         val buttonSize = 25f * scalingInfo.scale
         val buttonSizeDp = with(density) { buttonSize.toDp() }
@@ -100,8 +101,9 @@ fun GuitarKnob(
                                     // Continuously rotate until interrupted
                                     while (true) {
                                         rotationXAnim.animateTo(
-                                            rotationXAnim.value + 360f,
-                                            animationSpec = KnobAnimations.responsiveRotationSpec
+                                                rotationXAnim.value + 360f,
+                                                animationSpec =
+                                                        KnobAnimations.responsiveRotationSpec
                                         )
                                     }
                                 }
@@ -115,8 +117,9 @@ fun GuitarKnob(
                                     // Continuously rotate until interrupted
                                     while (true) {
                                         rotationXAnim.animateTo(
-                                            rotationXAnim.value - 360f,
-                                            animationSpec = KnobAnimations.responsiveRotationSpec
+                                                rotationXAnim.value - 360f,
+                                                animationSpec =
+                                                        KnobAnimations.responsiveRotationSpec
                                         )
                                     }
                                 }
@@ -124,25 +127,35 @@ fun GuitarKnob(
                             TuningDirection.IN_TUNE -> {
                                 // If we've been rotating, perform a smooth return to neutral
                                 if (rotationYAnim.value != getInitialYRotation(isLeftSide) ||
-                                    rotationXAnim.value % 360f != 0f) {
+                                                rotationXAnim.value % 360f != 0f
+                                ) {
 
-                                    // Complete the current rotation to avoid sudden stops
+                                    // Complete the current rotation in the same direction to avoid
+                                    // sudden reversal
+
+                                    // Calculate target rotation to nearest 360 multiple in the same
+                                    // direction
+                                    val targetRotation = (rotationXAnim.value / 360f).toInt() * 360f + 360f
+                                    Log.d("direction", "Target rotation: $targetRotation, tuning direction: $tuningDirection")
+
+                                    // Continue rotation in same direction to target
                                     rotationXAnim.animateTo(
-                                        (rotationXAnim.value / 360f).toInt() * 360f,
-                                        animationSpec = KnobAnimations.finishRotationSmoothlySpec
+                                            targetRotation,
+                                            animationSpec =
+                                                    KnobAnimations.finishRotationSmoothlySpec
                                     )
 
                                     // Return to neutral Y rotation
                                     rotationYAnim.animateTo(
-                                        getInitialYRotation(isLeftSide),
-                                        animationSpec = KnobAnimations.finishSmoothlySpec
+                                            getInitialYRotation(isLeftSide),
+                                            animationSpec = KnobAnimations.finishSmoothlySpec
                                     )
                                 }
 
                                 // Perform "in tune" pulse animation
                                 scaleAnim.animateTo(
-                                    0.9f,
-                                    animationSpec = KnobAnimations.instantSpec
+                                        0.9f,
+                                        animationSpec = KnobAnimations.instantSpec
                                 )
                                 scaleAnim.animateTo(1.1f, animationSpec = KnobAnimations.bounceSpec)
                                 scaleAnim.animateTo(1f, animationSpec = KnobAnimations.bounceSpec)
@@ -151,20 +164,24 @@ fun GuitarKnob(
                     } else {
                         // When becoming inactive, ensure a smooth return to default state
                         rotationYAnim.animateTo(
-                            getInitialYRotation(isLeftSide),
-                            animationSpec = KnobAnimations.finishSmoothlySpec
+                                getInitialYRotation(isLeftSide),
+                                animationSpec = KnobAnimations.finishSmoothlySpec
                         )
 
-                        // Complete the current rotation to avoid sudden stops
+                        // Calculate target rotation to nearest 360 multiple in the same direction
+                        val targetRotation = (rotationXAnim.value / 360f).toInt() * 360f + 360f
+                        Log.d("direction", "Target rotation: $targetRotation, tuning direwction: $tuningDirection")
+
+                        // Continue rotation in same direction to target
                         rotationXAnim.animateTo(
-                            (rotationXAnim.value / 360f).toInt() * 360f,
-                            animationSpec = KnobAnimations.finishRotationSmoothlySpec
+                                targetRotation,
+                                animationSpec = KnobAnimations.finishRotationSmoothlySpec
                         )
 
                         scaleAnim.animateTo(1f, animationSpec = KnobAnimations.finishSmoothlySpec)
                         elevationAnim.animateTo(
-                            4f,
-                            animationSpec = KnobAnimations.finishSmoothlySpec
+                                4f,
+                                animationSpec = KnobAnimations.finishSmoothlySpec
                         )
                     }
                 }
@@ -182,34 +199,34 @@ fun GuitarKnob(
         val yOffset = with(density) { (center.y - buttonSize / 2).toDp() }
 
         Box(
-            modifier =
-            Modifier.offset(x = xOffset, y = yOffset)
-                .size(buttonSizeDp)
-                .graphicsLayer {
-                    scaleX = scaleAnim.value
-                    scaleY = scaleAnim.value
-                    rotationX = rotationXAnim.value
-                    rotationY = rotationYAnim.value
-                    transformOrigin =
-                        TransformOrigin(if (isLeftSide) 1.1f else -0.1f, 0.5f)
-                    //shadowElevation = elevationAnim.value
-                    shape = RoundedCornerShape(16.dp)
-                }
-                .clip(RoundedCornerShape(16.dp))
-                .background(color)
-                .clickable { onClick() },
-            contentAlignment = Alignment.Center
+                modifier =
+                        Modifier.offset(x = xOffset, y = yOffset)
+                                .size(buttonSizeDp)
+                                .graphicsLayer {
+                                    scaleX = scaleAnim.value
+                                    scaleY = scaleAnim.value
+                                    rotationX = rotationXAnim.value
+                                    rotationY = rotationYAnim.value
+                                    transformOrigin =
+                                            TransformOrigin(if (isLeftSide) 1.1f else -0.1f, 0.5f)
+                                    // shadowElevation = elevationAnim.value
+                                    shape = RoundedCornerShape(16.dp)
+                                }
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(color)
+                                .clickable { onClick() },
+                contentAlignment = Alignment.Center
         ) {
             Text(
-                text = noteFreq.toString(),
-                color = Color.White,
-                style = MaterialTheme.typography.labelSmall
+                    text = noteFreq.toString(),
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelSmall
             )
         }
     }
 }
 
-private fun getInitialYRotation(isLeftSide: Boolean) : Float {
+private fun getInitialYRotation(isLeftSide: Boolean): Float {
     return if (isLeftSide) 15f else -15f
 }
 
@@ -232,22 +249,22 @@ private object KnobAnimations {
 
     // Responsive rotation with fast start, slower finish
     val responsiveRotationSpec: AnimationSpec<Float> =
-        tween(durationMillis = 1500, easing = FastOutSlowInEasing)
+            tween(durationMillis = 1500, easing = FastOutSlowInEasing)
 
     // Quick but natural-feeling adjustments
     val quickAdjustmentSpec: AnimationSpec<Float> =
-        spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = 200f)
+            spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = 200f)
 
     // Bouncy effect for in-tune feedback
     val bounceSpec: AnimationSpec<Float> = spring(dampingRatio = 0.6f, stiffness = 180f)
 
     // For smooth completion of animations when becoming inactive
     val finishSmoothlySpec: AnimationSpec<Float> =
-        tween(durationMillis = 300, easing = FastOutSlowInEasing)
+            tween(durationMillis = 300, easing = FastOutSlowInEasing)
 
     // For completing rotations smoothly
     val finishRotationSmoothlySpec: AnimationSpec<Float> =
-        tween(durationMillis = 500, easing = FastOutSlowInEasing)
+            tween(durationMillis = 500, easing = FastOutSlowInEasing)
 }
 
 /** Determine knob color based on state and tuning direction */
@@ -267,16 +284,16 @@ private fun determineKnobColor(isActive: Boolean, tuningDirection: TuningDirecti
 // Helper extension functions for color manipulation
 private fun Color.lighten(amount: Float): Color {
     return copy(
-        red = (red + amount).coerceAtMost(1f),
-        green = (green + amount).coerceAtMost(1f),
-        blue = (blue + amount).coerceAtMost(1f)
+            red = (red + amount).coerceAtMost(1f),
+            green = (green + amount).coerceAtMost(1f),
+            blue = (blue + amount).coerceAtMost(1f)
     )
 }
 
 private fun Color.darken(amount: Float): Color {
     return copy(
-        red = (red - amount).coerceAtLeast(0f),
-        green = (green - amount).coerceAtLeast(0f),
-        blue = (blue - amount).coerceAtLeast(0f)
+            red = (red - amount).coerceAtLeast(0f),
+            green = (green - amount).coerceAtLeast(0f),
+            blue = (blue - amount).coerceAtLeast(0f)
     )
 }
