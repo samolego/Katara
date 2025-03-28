@@ -1,0 +1,30 @@
+Katara is a beautiful and intuitive musical instrument tuner for tuning your string instruments.
+
+<b>Features:</b>
+<ul>
+<li>🎵 Real-time pitch detection with high accuracy</li>
+<li>🎸 Support for multiple instruments (Guitar, Ukulele)</li>
+<li>🔄 Visual tuning feedback with animated tuning pegs</li>
+<li>🎯 Cents display for precise tuning</li>
+<li>📊 Clear visual indicators for tuning direction</li>
+<li>🔍 Manual mode for focusing on specific strings</li>
+<li>🌙 Light/Dark theme support</li>
+<li>🔒 Works completely offline - no internet permission required</li>
+</ul>
+
+<b>How to use:</b>
+<ol>
+<li>Launch and grant microphone permission</li>
+<li>Select your instrument type</li>
+<li>Play a string on your instrument</li>
+<li>Follow the visual guidance:
+  <ul>
+  <li>🔴 Red/Orange: Too high - loosen the string</li>
+  <li>🔵 Blue: Too low - tighten the string</li>
+  <li>🟢 Green: String is in tune!</li>
+  </ul>
+</li>
+<li>Toggle manual mode to focus on specific strings</li>
+</ol>
+
+Katara is open source and licensed under GPL-3.0.
