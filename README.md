@@ -19,6 +19,14 @@ Katara is a beautiful and intuitive musical instrument tuner app for Android. It
 - 🌙 Light/Dark theme support
 - 🔒 No internet permission required - works completely offline for privacy
 
+## Screenshots
+
+| <img width="256" src="metadata/en-US/images/phoneScreenshots/main_screen.png"> | <img width="256" src="metadata/en-US/images/phoneScreenshots/guitar_e4.png"> | <img width="256" src="metadata/en-US/images/phoneScreenshots/guitar_manual.png"> |
+|:---:|:---:|:---:|
+| Main | In tune | Manual mode switch |
+| <img width="256" src="metadata/en-US/images/phoneScreenshots/instrument_switch.png"> | <img width="256" src="metadata/en-US/images/phoneScreenshots/ukulele_e4_low.png"> |  |
+| Switch instrument | Ukulele |  |
+
 
 ## Usage
 
@@ -38,7 +46,7 @@ Contributions are welcome! Feel free to submit issues or pull requests.
 ## Acknowledgments
 
 - TarsosDSP library for audio processing
-- Made for my ❤️, Rebeka
+- Made for my ❤️, Rebeka (who also taught me to play guitar 😄)
 
 ## License
 
