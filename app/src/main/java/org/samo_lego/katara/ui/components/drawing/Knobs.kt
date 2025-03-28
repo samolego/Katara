@@ -5,7 +5,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -37,9 +36,7 @@ import org.samo_lego.katara.instrument.InstrumentLayoutSpecification
 import org.samo_lego.katara.instrument.StringData
 import org.samo_lego.katara.tuner.NoteFrequency
 import org.samo_lego.katara.tuner.TuningDirection
-import org.samo_lego.katara.ui.theme.TuneOk
-import org.samo_lego.katara.ui.theme.TuneTooHigh
-import org.samo_lego.katara.ui.theme.TuneTooLow
+import org.samo_lego.katara.ui.theme.tuneColors
 import org.samo_lego.katara.ui.util.calculateCanvasScaling
 import org.samo_lego.katara.ui.util.scalePosition
 
@@ -135,8 +132,12 @@ fun GuitarKnob(
 
                                     // Calculate target rotation to nearest 360 multiple in the same
                                     // direction
-                                    val targetRotation = (rotationXAnim.value / 360f).toInt() * 360f + 360f
-                                    Log.d("direction", "Target rotation: $targetRotation, tuning direction: $tuningDirection")
+                                    val targetRotation =
+                                            (rotationXAnim.value / 360f).toInt() * 360f + 360f
+                                    Log.d(
+                                            "direction",
+                                            "Target rotation: $targetRotation, tuning direction: $tuningDirection"
+                                    )
 
                                     // Continue rotation in same direction to target
                                     rotationXAnim.animateTo(
@@ -170,7 +171,10 @@ fun GuitarKnob(
 
                         // Calculate target rotation to nearest 360 multiple in the same direction
                         val targetRotation = (rotationXAnim.value / 360f).toInt() * 360f + 360f
-                        Log.d("direction", "Target rotation: $targetRotation, tuning direwction: $tuningDirection")
+                        Log.d(
+                                "direction",
+                                "Target rotation: $targetRotation, tuning direwction: $tuningDirection"
+                        )
 
                         // Continue rotation in same direction to target
                         rotationXAnim.animateTo(
@@ -219,7 +223,7 @@ fun GuitarKnob(
         ) {
             Text(
                     text = noteFreq.toString(),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     style = MaterialTheme.typography.labelSmall
             )
         }
@@ -251,10 +255,6 @@ private object KnobAnimations {
     val responsiveRotationSpec: AnimationSpec<Float> =
             tween(durationMillis = 1500, easing = FastOutSlowInEasing)
 
-    // Quick but natural-feeling adjustments
-    val quickAdjustmentSpec: AnimationSpec<Float> =
-            spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = 200f)
-
     // Bouncy effect for in-tune feedback
     val bounceSpec: AnimationSpec<Float> = spring(dampingRatio = 0.6f, stiffness = 180f)
 
@@ -272,12 +272,12 @@ private object KnobAnimations {
 private fun determineKnobColor(isActive: Boolean, tuningDirection: TuningDirection): Color {
     return if (isActive) {
         when (tuningDirection) {
-            TuningDirection.IN_TUNE -> TuneOk
-            TuningDirection.TOO_LOW -> TuneTooLow
-            TuningDirection.TOO_HIGH -> TuneTooHigh
+            TuningDirection.IN_TUNE -> MaterialTheme.tuneColors.ok
+            TuningDirection.TOO_LOW -> MaterialTheme.tuneColors.tooLow
+            TuningDirection.TOO_HIGH -> MaterialTheme.tuneColors.tooHigh
         }
     } else {
-        MaterialTheme.colorScheme.surfaceVariant
+        MaterialTheme.colorScheme.primaryContainer
     }
 }
 

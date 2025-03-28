@@ -7,6 +7,9 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -20,6 +23,14 @@ private val LightColorScheme = lightColorScheme(
     secondary = BrownGray,
     tertiary = Brown2
 )
+
+val LocalTuneColors = staticCompositionLocalOf { lightTuneColors }
+
+// Extension property to access tune colors from MaterialTheme
+val MaterialTheme.tuneColors: TuneColors
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalTuneColors.current
 
 @Composable
 fun KataraTheme(
@@ -38,9 +49,15 @@ fun KataraTheme(
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    val tuneColors = if (darkTheme) darkTuneColors else lightTuneColors
+
+    CompositionLocalProvider(
+        LocalTuneColors provides tuneColors
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

@@ -12,7 +12,7 @@ fun processFrequency(frequency: Double): NoteData {
     val noteData = calculateNoteData(frequency)
 
     // Apply harmonic correction if needed
-    val correctedNoteData = HarmonicCorrections.correctHarmonicConfusion(noteData, frequency)
+    val correctedNoteData = noteData //HarmonicCorrections.correctHarmonicConfusion(noteData, frequency)
 
     // Find closest guitar string
     val closestString = NoteFrequency.findClosestString(frequency)
