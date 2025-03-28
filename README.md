@@ -2,7 +2,10 @@
 
 [![Android](https://img.shields.io/badge/Platform-Android-brightgreen.svg)](https://developer.android.com/)
 [![Kotlin](https://img.shields.io/badge/Language-Kotlin-orange.svg)](https://kotlinlang.org/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-GPL-blue.svg)](LICENSE)
+
+## Download
+[![](https://img.shields.io/github/v/release/samolego/katara?include_prereleases&style=for-the-badge&logo=GitHub&label=GitHub&color=blue)](https://github.com/samolego/Katara/releases/latest/)
 
 ## Overview
 
